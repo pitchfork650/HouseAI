@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { Icon, LogoTile } from "@/components/icons";
 import { FLOW_ROWS, COMPLIANCE_ITEMS, type FlowStep } from "@/content/flow";
+import { TopNav } from "@/components/TopNav";
+import { navItems } from "@/lib/nav";
+
+export const dynamic = "force-dynamic";
 
 function Arrow({ dashed = false }: { dashed?: boolean }) {
   return (
@@ -49,9 +53,13 @@ function StepCard({ s }: { s: FlowStep }) {
   );
 }
 
-export default function FlowPage() {
+export default async function FlowPage() {
+  const items = await navItems();
   return (
     <div className="box-border flex min-h-screen flex-col bg-bg text-ink">
+      <div className="border-b border-navy-line bg-navy px-16 py-2 max-[800px]:px-3">
+        <TopNav items={items} />
+      </div>
       <header className="relative flex flex-wrap items-end justify-between gap-8 overflow-hidden bg-navy px-16 pb-10 pt-11 text-white max-[800px]:px-5 max-[800px]:pt-8">
         <svg
           width="1600"

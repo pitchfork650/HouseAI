@@ -17,19 +17,39 @@ With everything on one machine there is no tunnel: the app talks to the host ser
 - **Node.js 22 or newer** (`node -v`). The Codespace uses Node 24.
 - **Git**
 - **OpenSwarm desktop app**, installed and signed in (only needed in step 5)
+- **Supabase database URLs** from a teammate or the Supabase dashboard (Connect → pooler). The
+  app uses Postgres only; there is no local database.
 - Run the commands below in **PowerShell**. Env vars use `$env:NAME="value"`, not `NAME=value`.
 
-## 1. Get the code and install
+## 1. Get the code and connect the database
 
 ```powershell
 git clone https://github.com/pitchfork650/HouseAI
 cd HouseAI
 npm install
 copy .env.example .env
-npm run setup
 ```
 
-**Check:** `npm run setup` ends with `Seeded: 25 patients, ...`.
+In `.env`, fill in the database URLs (the comments at the top of `.env.example` explain each one):
+
+```
+DATABASE_URL=   # Transaction pooler, port 6543, ends with ?pgbouncer=true&connection_limit=1
+DIRECT_URL=     # Session pooler, port 5432
+```
+
+Then load the schema and sample data, **but only if the database is new or nobody minds losing
+its data**. The seed deletes every patient, appointment and run before inserting the samples.
+If the laptop shares the team's existing Supabase database, run only `npx prisma generate`.
+
+```powershell
+npm run setup        # new or throwaway database
+npx prisma generate  # shared database that already has data
+```
+
+**Check:** `npm run setup` ends with `Seeded: ...`, or `npx prisma generate` succeeds.
+
+Running `npm test` also needs `TEST_DATABASE_URL`: the Session pooler URL with `?schema=test`. It's
+optional for this setup.
 
 ## 2. Pick a token and configure the app
 
@@ -125,6 +145,7 @@ terminal 1.
 
 | Symptom | Fix |
 |---|---|
+| `Can't reach database server` or `P1001` | `DATABASE_URL` / `DIRECT_URL` missing or wrong in `.env`. Use the pooler hosts, not the direct-connection host. |
 | `EADDRINUSE ... :3000` or `:8787` | That server is already running. Use it, or stop the other process first. |
 | Probe or app gets 401 | `OPENSWARM_TOKEN` in `.env` doesn't match the one set in terminal 1. |
 | Chip says **Host not ready** | The host is reachable but `openSwarmState()` reports OpenSwarm isn't running or signed in. |

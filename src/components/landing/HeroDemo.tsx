@@ -19,7 +19,7 @@ const STAGGER = 520;
 const RUN_FOR = 900;
 
 /** The hero product shot: a scripted, looping replay of a diagnostic swarm run on the demo pano. */
-export function HeroDemo({ patientId, dayLabel, agents, findings }: { patientId: string; dayLabel: string; agents: DemoAgent[]; findings: DemoFinding[] }) {
+export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc }: { patientId: string; dayLabel: string; agents: DemoAgent[]; findings: DemoFinding[]; imageSrc?: string }) {
   const [ref, inView] = useInView<HTMLDivElement>({ repeat: true, margin: "0px" });
   const reduce = usePrefersReducedMotion();
   const allDone = START + (agents.length - 1) * STAGGER + RUN_FOR;
@@ -95,8 +95,8 @@ export function HeroDemo({ patientId, dayLabel, agents, findings }: { patientId:
             {/* Pano + findings */}
             <div className="min-w-0 border-r border-white/[0.07] p-4 max-[900px]:border-r-0">
               <div className="relative overflow-hidden rounded-lg bg-black">
-                <svg viewBox="0 0 800 400" className="block h-auto w-full" role="img" aria-label="Synthetic panoramic dental X-ray with AI findings outlined">
-                  <SyntheticPano />
+                <svg viewBox="0 0 800 400" className="block h-auto w-full" role="img" aria-label={imageSrc ? "Panoramic dental X-ray with the swarm's findings outlined" : "Synthetic panoramic dental X-ray with AI findings outlined"}>
+                  {imageSrc ? <image href={imageSrc} x="0" y="0" width="800" height="400" preserveAspectRatio="xMidYMid meet" /> : <SyntheticPano />}
                   {findings.map((f, j) =>
                     f.overlay.map((s, k) => {
                       const on = now >= findingAt(j);

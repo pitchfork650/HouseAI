@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { DEFAULT_ROUTES } from "@/lib/config";
+import { demoDiagnosticRun } from "@/lib/demo";
 import { dayEyebrow } from "@/lib/clock";
 import { navItems } from "@/lib/nav";
 import { DEFAULT_DAY } from "@/lib/schedule";
@@ -31,14 +32,10 @@ function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: 
 }
 
 export default async function LandingPage() {
-  const [items, run] = await Promise.all([
-    navItems(),
-    prisma.swarmRun.findFirst({
-      where: { kind: "diagnostic" },
-      orderBy: { startedAt: "desc" },
-      include: { agents: { orderBy: { order: "asc" } }, findings: { orderBy: { order: "asc" } } },
-    }),
-  ]);
+  const [items, demo] = await Promise.all([navItems(), demoDiagnosticRun()]);
+  const run = demo.run;
+  const demoHref = run ? `/diagnostics/${run.patientId}` : DEFAULT_ROUTES.diagnostics;
+  const imageSrc = demo.real && run?.studyId ? `/api/studies/${run.studyId}/file` : undefined;
   const agents = (run?.agents ?? []).map((a) => ({ name: a.name, badge: a.badge, status: a.status }));
   const findings: DemoFinding[] = (run?.findings ?? [])
     .map((f) => ({
@@ -53,7 +50,7 @@ export default async function LandingPage() {
   const swarmNames = agents.filter((a) => a.status !== "skip" && a.name !== "Skeptic" && a.name !== "Verifier").slice(0, 5).map((a) => a.name);
 
   const steps: WorkflowStep[] = FLOW_ROWS.flatMap((row) =>
-    row.steps.map((s) => ({ num: s.num.split(" ")[0], title: s.title, icon: s.icon, tag: s.tag, body: s.body, swarm: s.swarm, href: s.href })),
+    row.steps.map((s) => ({ num: s.num.split(" ")[0], title: s.title, icon: s.icon, tag: s.tag, body: s.body, swarm: s.swarm, href: s.href.startsWith(DEFAULT_ROUTES.diagnostics) ? s.href.replace(DEFAULT_ROUTES.diagnostics, demoHref) : s.href })),
   );
   const loop = FLOW_ROWS.find((r) => r.loopsBack)?.loopsBack;
 
@@ -66,7 +63,7 @@ export default async function LandingPage() {
 
   return (
     <div className="lp min-h-screen">
-      <LandingNav demoHref={DEFAULT_ROUTES.diagnostics} />
+      <LandingNav demoHref={demoHref} />
 
       {/* Hero */}
       <header className="relative overflow-hidden">
@@ -86,7 +83,7 @@ export default async function LandingPage() {
             HouseAI runs the work between the chair and the front desk. Agent swarms read every X-ray, fill the calendar, chase insurance and bring patients back, while your dentists sign off on every finding.
           </p>
           <div className="lp-fade mt-9 flex flex-wrap items-center justify-center gap-3" style={{ animationDelay: "700ms" }}>
-            <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
+            <Link href={demoHref} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
               Open the live demo
               <span className="lp-btn-arrow" aria-hidden="true">→</span>
             </Link>
@@ -98,9 +95,21 @@ export default async function LandingPage() {
 
         <div className="lp-rise relative mx-auto mt-16 max-w-[1200px] px-6 max-[640px]:mt-10 max-[640px]:px-3" style={{ animationDelay: "850ms" }}>
           <ScrollTilt>
-            {run ? <HeroDemo patientId={run.patientId} dayLabel={dayEyebrow(DEFAULT_DAY)} agents={agents} findings={findings} /> : null}
+            {run ? (
+              <HeroDemo
+                patientId={run.patientId}
+                dayLabel={demo.real && run.study ? `READ ${run.startedAt.toISOString().slice(0, 10)} · ${Math.round(((run.finishedAt ?? run.startedAt).getTime() - run.startedAt.getTime()) / 1000)} S` : dayEyebrow(DEFAULT_DAY)}
+                agents={agents}
+                findings={findings}
+                imageSrc={imageSrc}
+              />
+            ) : null}
           </ScrollTilt>
-          <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">Synthetic demo patient. Decision support only.</p>
+          <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">
+            {imageSrc
+              ? `A real, de-identified panoramic X-ray (DENTEX dataset, CC BY-NC-SA 4.0), read by the agent swarm${run?.agents.find((a) => a.model)?.model ? ` on ${run.agents.find((a) => a.model)!.model}` : ""}. Decision support only.`
+              : "Synthetic demo patient. Decision support only."}
+          </p>
         </div>
       </header>
 
@@ -175,7 +184,7 @@ export default async function LandingPage() {
           <h2 className="m-0 max-w-[760px] text-[56px] font-semibold leading-[1.04] tracking-[-0.045em] text-lp-ink max-[640px]:text-[36px]">Your next clinic day, already handled.</h2>
           <p className="m-0 max-w-[520px] text-[17px] leading-[1.6] text-lp-muted">Walk through a full clinic day in the demo: the swarm&apos;s read, the booked schedule, insurance in flight and follow-ups ready to send.</p>
           <div className="mt-2 flex flex-wrap justify-center gap-3">
-            <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
+            <Link href={demoHref} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
               Open the live demo
               <span className="lp-btn-arrow" aria-hidden="true">→</span>
             </Link>

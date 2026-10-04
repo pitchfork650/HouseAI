@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { DEFAULT_ROUTES } from "./config";
+import { diagnosticsHref } from "./demo";
 import type { NavItem } from "@/components/Sidebar";
 
 /** Open findings on each patient's latest diagnostic run. */
@@ -23,14 +24,15 @@ export async function lanesNeedingAttention(): Promise<number> {
 }
 
 export async function navItems(): Promise<NavItem[]> {
-  const [findings, lanes, nextFollowUp] = await Promise.all([
+  const [findings, lanes, nextFollowUp, diagHref] = await Promise.all([
     openFindingsCount(),
     lanesNeedingAttention(),
     prisma.followUp.findFirst({ where: { status: { in: ["draft", "approved"] } }, orderBy: { scheduledFor: "asc" }, select: { id: true } }),
+    diagnosticsHref(),
   ]);
   return [
     { key: "flow", label: "Flow", href: "/", icon: "flow", match: "/" },
-    { key: "diagnostics", label: "Diagnostics", href: DEFAULT_ROUTES.diagnostics, icon: "scanNav", count: findings, countTone: "teal", match: "/diagnostics" },
+    { key: "diagnostics", label: "Diagnostics", href: diagHref, icon: "scanNav", count: findings, countTone: "teal", match: "/diagnostics" },
     { key: "schedule", label: "Schedule", href: "/schedule", icon: "calendar", match: "/schedule" },
     { key: "insurance", label: "Insurance", href: DEFAULT_ROUTES.insurance, icon: "shieldCheck", count: lanes, countTone: "orange", match: "/insurance" },
     { key: "recall", label: "Recall", href: "/recall/P-1042", icon: "loop", match: "/recall" },

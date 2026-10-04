@@ -19,8 +19,7 @@ const STAGGER = 520;
 const RUN_FOR = 900;
 
 /** The hero product shot: a scripted, looping replay of a diagnostic swarm run on the demo pano. */
-/** `pending`: a real X-ray the swarm hasn't read yet. Shown still, with every agent queued and no findings. */
-export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc, pending = false, studyLabel = "Panoramic X-ray" }: { patientId: string; dayLabel: string; agents: DemoAgent[]; findings: DemoFinding[]; imageSrc?: string; pending?: boolean; studyLabel?: string }) {
+export function HeroDemo({ patientId, dayLabel, agents, findings }: { patientId: string; dayLabel: string; agents: DemoAgent[]; findings: DemoFinding[] }) {
   const [ref, inView] = useInView<HTMLDivElement>({ repeat: true, margin: "0px" });
   const reduce = usePrefersReducedMotion();
   const allDone = START + (agents.length - 1) * STAGGER + RUN_FOR;
@@ -31,7 +30,7 @@ export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc, pend
   const [loop, setLoop] = useState(0);
 
   useEffect(() => {
-    if (reduce || !inView || pending) return;
+    if (reduce || !inView) return;
     const id = setInterval(() => {
       setT((x) => {
         if (x + TICK >= cycle) {
@@ -42,9 +41,9 @@ export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc, pend
       });
     }, TICK);
     return () => clearInterval(id);
-  }, [reduce, inView, cycle, pending]);
+  }, [reduce, inView, cycle]);
 
-  const now = pending ? 0 : reduce ? cycle - 1 : t;
+  const now = reduce ? cycle - 1 : t;
   const findingAt = (j: number) => START + 900 + j * ((allDone - START - 900) / Math.max(1, findings.length));
   const fading = !reduce && now > cycle - 500;
   const shown = findings.filter((_, j) => now >= findingAt(j));
@@ -81,14 +80,14 @@ export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc, pend
           {/* Header */}
           <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] px-5 py-3">
             <div className="flex min-w-0 items-center gap-3">
-              <span className="whitespace-nowrap text-[13px] font-medium text-white">{studyLabel}</span>
+              <span className="whitespace-nowrap text-[13px] font-medium text-white">Panoramic X-ray</span>
               <span className="truncate font-mono text-[11px] text-white/40 max-[560px]:hidden">
                 {patientId} · {dayLabel}
               </span>
             </div>
             <span className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-[10px] py-1 text-[11px] font-medium transition-colors duration-500 ${now >= consensusAt ? "bg-[#38BDCF]/15 text-[#A5F3FC]" : "bg-white/[0.06] text-white/60"}`}>
               <span className={`h-[6px] w-[6px] rounded-full ${now >= consensusAt ? "bg-[#38BDCF]" : "demo-blink bg-[#FBBF24]"}`} />
-              {pending ? "Awaiting swarm read" : now >= consensusAt ? `Consensus · ${findings.length} findings` : "Swarm reading…"}
+              {now >= consensusAt ? `Consensus · ${findings.length} findings` : "Swarm reading…"}
             </span>
           </div>
 
@@ -96,8 +95,8 @@ export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc, pend
             {/* Pano + findings */}
             <div className="min-w-0 border-r border-white/[0.07] p-4 max-[900px]:border-r-0">
               <div className="relative overflow-hidden rounded-lg bg-black">
-                <svg viewBox="0 0 800 400" className="block h-auto w-full" role="img" aria-label={imageSrc ? `${studyLabel} with the swarm's findings outlined` : "Synthetic panoramic dental X-ray with AI findings outlined"}>
-                  {imageSrc ? <image href={imageSrc} x="0" y="0" width="800" height="400" preserveAspectRatio="xMidYMid meet" /> : <SyntheticPano />}
+                <svg viewBox="0 0 800 400" className="block h-auto w-full" role="img" aria-label="Synthetic panoramic dental X-ray with AI findings outlined">
+                  <SyntheticPano />
                   {findings.map((f, j) =>
                     f.overlay.map((s, k) => {
                       const on = now >= findingAt(j);
@@ -114,7 +113,7 @@ export function HeroDemo({ patientId, dayLabel, agents, findings, imageSrc, pend
                     }),
                   )}
                 </svg>
-                {!reduce && !pending ? <div key={loop} className="demo-scan pointer-events-none absolute inset-y-0 w-[18%]" aria-hidden="true" /> : null}
+                {!reduce ? <div key={loop} className="demo-scan pointer-events-none absolute inset-y-0 w-[18%]" aria-hidden="true" /> : null}
               </div>
 
               <div className="mt-3 grid grid-cols-3 gap-2 max-[560px]:grid-cols-1">

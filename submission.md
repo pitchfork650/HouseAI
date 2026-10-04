@@ -3,7 +3,7 @@
 ## Devpost fields
 
 - **Project name:** HouseAI Dental
-- **Tagline:** From X-ray to follow-up, on one record. AI agent swarms run the clinic's legwork; the dentist signs off on every finding.
+- **Elevator pitch** (max 200 characters): AI agent swarms read dental X-rays, build the schedule, chase insurance and send follow-ups, all on one patient record, while the dentist signs off on every finding.
 - **Team:** Gavin Huang, Justin Thai, Aryn Ni
 - **Try it out:** [DEMO URL] · https://github.com/ryunzz/HouseAI
 - **Video:** [VIDEO URL]

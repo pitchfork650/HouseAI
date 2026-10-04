@@ -19,6 +19,12 @@ The only required credentials are the database URLs. With no `GEMINI_API_KEY` an
 
 Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Prisma 6 on Postgres (Supabase, also for Storage), Gemini via `@google/genai`, zod 4, Vitest.
 
+### Deploy (Vercel + Supabase)
+
+Supabase project: `houseai-dental` (us-west-1). Vercel runs `npm run vercel-build`, which pushes the Prisma schema, creates the private `patient-files` bucket, and seeds the demo clinic only when the database is empty. Functions run in `sfo1`, next to the database (`vercel.json`).
+
+Set these in the Vercel project: `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `FILE_ENCRYPTION_KEY`, `CRON_SECRET`, plus any optional keys from `.env.example`. Serverless functions don't keep the in-process scheduler alive, so a daily Vercel Cron calls `GET /api/cron/tick` (Hobby plans allow one run a day).
+
 ### OpenSwarm host
 
 **Swarms run on OpenSwarm on a separate host device** (the Windows host laptop), reached through an MCP server over HTTPS or a private tunnel. Agent prompts and output formats stay in `agents/` and are sent with every run. The contract is in [`docs/openswarm-mcp-contract.md`](docs/openswarm-mcp-contract.md), and a reference host server is in `host/server.ts` (`npm run host:dev`; check a host with `npm run host:probe`). The sidebar chip shows the host status: green when connected, amber when offline or on the mock.

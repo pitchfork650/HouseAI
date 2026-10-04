@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Insurance swarm</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF3F8}
+a{color:#0B7285}a:hover{color:#075563}
+</style>
+</helmet>
+<div style="min-height: 1000px; display: flex; flex-wrap: wrap; background: #EEF3F8; color: #0F1B2D; font-family: 'Public Sans', system-ui, sans-serif">
+
+  <aside style="flex: 1 1 232px; box-sizing: border-box; background: #0B1F3A; color: #C9D6E8; padding: 22px 14px; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px 22px">
+      <div style="width: 38px; height: 38px; border-radius: 11px; background: #0B7285; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"><path d="M7 3c-2.5 0-4 2-4 4.5 0 3 1.5 4.5 2 7.5.4 2.6 1 6 2.5 6s1.7-3.5 2.5-6c.3-1 1.7-1 2 0 .8 2.5 1 6 2.5 6s2.1-3.4 2.5-6c.5-3 2-4.5 2-7.5C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"></path></svg></div>
+      <div style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 17px; color: #FFFFFF">HouseAI</span><span style="font-size: 12px; color: #7DD3E0">Dental clinical suite</span></div>
+    </div>
+    <div style="padding: 6px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6F87A8">CLINIC</div>
+    <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h6"></path></svg>Flow</a>
+    <a href="Diagnose.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"></path></svg>Diagnostics</a>
+    <a href="Schedule.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"></path></svg>Schedule</a>
+    <a href="Insurance.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; background: #13335E; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7DD3E0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4"></path></svg>Insurance<span style="margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #C2410C; color: #FFFFFF">1</span></a>
+    <a href="FollowUp.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM3 7l9 6 9-6"></path></svg>Follow-ups</a>
+    <div style="margin-top: auto; padding: 14px; border-radius: 12px; background: #13335E; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.45">
+      <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DD3E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>GDPR compliant</div>
+      <span>EU data residency · audit log on · encrypted at rest</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 14px 8px 0">
+      <div style="width: 34px; height: 34px; border-radius: 50%; background: #1E3E66; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">DR</div>
+      <div style="display: flex; flex-direction: column; font-size: 13px"><span style="color: #FFFFFF; font-weight: 600">Dr. [NAME]</span><span style="font-size: 12px">[PRACTICE NAME]</span></div>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="background: #FFFFFF; border: 1px solid #D9E2EC; border-radius: 16px; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px; box-shadow: 0 1px 2px rgba(11,31,58,0.05)">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: #E8EFFC; color: #1A56DB; display: flex; align-items: center; justify-content: center; font-weight: 800">MT</div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 18px; font-weight: 700">Marcus T.</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #52627A">P-1091 · changed jobs 2026-09 · card scanned 09:40</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; background: #EDF1F5; color: #3A4A60">Dual coverage</span>
+        <span style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; background: #EDF1F5; color: #3A4A60">Implant #19 planned</span>
+      </div>
+      <span style="margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 99px; background: #0B1F3A; color: #FFFFFF"><span style="width: 8px; height: 8px; border-radius: 50%; background: #38BDCF"></span>OpenSwarm · 5 agents · 1 retrying</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+      <sc-for list="{{lanes}}" as="l" hint-placeholder-count="5">
+        <div style="{{l.card}}">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="{{l.iconBox}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{l.iconColor}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{l.icon}}"></path></svg></div>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-weight: 700; font-size: 15px">{{l.name}}</span>
+              <span style="font-size: 12px; color: #52627A">{{l.target}}</span>
+            </div>
+            <span style="{{l.badge}}">{{l.status}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0; padding-left: 6px">
+            <sc-for list="{{l.log}}" as="line" hint-placeholder-count="3">
+              <div style="display: flex; gap: 12px; align-items: flex-start">
+                <div style="display: flex; flex-direction: column; align-items: center; align-self: stretch"><span style="{{line.dot}}"></span><span style="flex: 1; width: 2px; background: #E6ECF2"></span></div>
+                <div style="padding-bottom: 10px; display: flex; gap: 10px; font-size: 13px; line-height: 1.4"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #52627A">{{line.t}}</span><span>{{line.text}}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <div style="flex: 2 1 520px; min-width: 0; background: #0B1F3A; color: #C9D6E8; border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 30px rgba(11,31,58,0.2)">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #7DD3E0">IMPLANT #19 · COST SPLIT (ESTIMATE)</span>
+            <span style="font-size: 34px; font-weight: 800; color: #FFFFFF">[$ AMOUNT] <span style="font-size: 15px; font-weight: 500; color: #8FA3BD">patient pays</span></span>
+          </div>
+          <span style="font-size: 12px; color: #8FA3BD">Updates when Carrier B responds</span>
+        </div>
+        <div style="display: flex; height: 14px; border-radius: 99px; overflow: hidden; gap: 2px">
+          <div style="flex: 50; background: #38BDCF"></div>
+          <div style="flex: 25; background: repeating-linear-gradient(45deg, #1E3E66 0, #1E3E66 5px, #2A5285 5px, #2A5285 10px)"></div>
+          <div style="flex: 25; background: #FFFFFF"></div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px">
+          <span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #38BDCF"></span>Carrier A (primary) · verified</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #2A5285"></span>Carrier B (secondary) · pending</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #FFFFFF"></span>Patient</span>
+        </div>
+      </div>
+      <div style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border: 1px solid #D9E2EC; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: #3A4A60; box-shadow: 0 1px 2px rgba(11,31,58,0.05)">
+        <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: #0F1B2D"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B7285" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0 .01M5 17a2 2 0 1 0 0 .01M19 17a2 2 0 1 0 0 .01M12 7v4M12 11l-5.5 5M12 11l5.5 5"></path></svg>Why a swarm and not a script</div>
+        <span>Carrier B's portal timed out, so only that lane is retrying. Carrier A's result and the pre-approval went through unaffected.</span>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const badge = (bg, fg) => 'font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;white-space:nowrap;background:' + bg + ';color:' + fg;
+    const card = (border) => 'background:#FFFFFF;border:' + border + ';border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(11,31,58,0.05),0 8px 24px rgba(11,31,58,0.04)';
+    const box = (bg) => 'width:40px;height:40px;flex:none;border-radius:11px;display:flex;align-items:center;justify-content:center;background:' + bg;
+    const ok = badge('#E3F4F6', '#075563'), warn = badge('#FDEDE3', '#9A3412'), run = badge('#E8EFFC', '#1E3F9A');
+    const d = (c) => 'width:10px;height:10px;margin-top:4px;border-radius:50%;flex:none;background:' + c;
+    const L = (t, text, c) => ({ t, text, dot: d(c || '#0B7285') });
+    const shield = 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4';
+    return {
+      lanes: [
+        { name: 'Coordinator', target: 'Splits the job, merges results', status: 'Running', badge: run, card: card('1px solid #D9E2EC'), iconBox: box('#0B1F3A'), iconColor: '#7DD3E0', icon: 'M12 5a2 2 0 1 0 0 .01M5 17a2 2 0 1 0 0 .01M19 17a2 2 0 1 0 0 .01M12 7v4M12 11l-5.5 5M12 11l5.5 5',
+          log: [L('09:40', 'Card OCR found 2 carriers', '#1A56DB'), L('09:40', 'Started 4 agents', '#1A56DB'), L('09:52', 'Merged Carrier A result', '#1A56DB')] },
+        { name: 'Eligibility · Carrier A', target: 'New employer PPO · portal', status: 'Verified', badge: ok, card: card('1px solid #D9E2EC'), iconBox: box('#E3F4F6'), iconColor: '#0B7285', icon: shield,
+          log: [L('09:41', 'Portal login ok'), L('09:43', 'Active since [DATE]'), L('09:44', 'Annual max [$], [$] used')] },
+        { name: 'Eligibility · Carrier B', target: 'Spouse plan (secondary) · portal', status: 'Retry 14:00', badge: warn, card: card('2px solid #F3B48F'), iconBox: box('#FDEDE3'), iconColor: '#C2410C', icon: 'M12 4l9 16H3zM12 10v4M12 17v.01',
+          log: [L('09:41', 'Portal timeout (30 s)', '#C2410C'), L('09:46', 'Timeout again', '#C2410C'), L('09:47', 'Next try: phone line at 14:00', '#C2410C')] },
+        { name: 'Copay Chaser', target: 'Coverage % by procedure code', status: 'Verified', badge: ok, card: card('1px solid #D9E2EC'), iconBox: box('#E3F4F6'), iconColor: '#0B7285', icon: 'M12 3v18M16 7H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H7',
+          log: [L('09:45', 'D2740 crown: 50%'), L('09:45', 'D6010 implant: 50% after pre-approval'), L('09:46', 'Waiting period: none')] },
+        { name: 'Pre-approval Agent', target: 'Implant #19 · attaches X-rays', status: 'Submitted', badge: ok, card: card('1px solid #D9E2EC'), iconBox: box('#E3F4F6'), iconColor: '#0B7285', icon: 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6',
+          log: [L('09:48', 'Narrative from swarm findings'), L('09:49', 'Attached pano + bitewings'), L('09:50', 'Submitted · ref [#]')] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -14,7 +14,7 @@ export function FollowUpActions({ id, status }: { id: string; status: string }) 
     const res = await fetch(`/api/follow-ups/${id}/${action}`, { method: "POST" });
     const body = await res.json();
     setBusy(null);
-    setMsg(res.ok ? (action === "approve" ? "Approved. It will send at the scheduled time." : "Test sent to the clinic inbox.") : body.error ?? "Something went wrong.");
+    setMsg(res.ok ? (action === "approve" ? "Approved. It will send at the scheduled time." : body.delivered ? `Test sent to ${body.to}.` : `Test logged for ${body.to} (SMTP not configured).`) : body.error ?? "Something went wrong.");
     router.refresh();
   }
 

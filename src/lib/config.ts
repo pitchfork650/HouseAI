@@ -12,11 +12,18 @@ export const PRACTICE = {
   signedInInitials: process.env.NEXT_PUBLIC_DOCTOR_INITIALS || "LY",
 };
 
+/** Where "Send test" goes. Tests never go to the clinic inbox or the patient. */
+export function testRecipient(): string {
+  const to = process.env.TEST_EMAIL_TO;
+  if (!to) throw new Error("Set TEST_EMAIL_TO to choose where test emails go.");
+  return to;
+}
+
 /** Default records each nav item opens. */
 export const DEFAULT_ROUTES = {
   diagnostics: "/diagnostics/P-1042",
   insurance: "/insurance/P-1091",
-  followUp: "/follow-ups/FU-1077",
+  followUp: "/follow-ups/FU-1120",
 };
 
 export function isMockMode(): boolean {

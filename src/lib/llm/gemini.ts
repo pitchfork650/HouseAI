@@ -17,7 +17,7 @@ function ai(): GoogleGenAI {
   return client;
 }
 
-const model = () => process.env.GEMINI_MODEL || "gemini-2.5-pro";
+const model = () => process.env.GEMINI_MODEL || "gemini-3.5-flash";
 
 function parts(prompt: string, images?: ImagePart[]) {
   return [

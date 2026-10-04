@@ -29,7 +29,7 @@ export function llmMode(): "gemini" | "mock" {
 }
 
 export function modelName(): string {
-  return process.env.GEMINI_MODEL || "gemini-2.5-pro";
+  return process.env.GEMINI_MODEL || "gemini-3.5-flash";
 }
 
 /** Simulated latency in mock mode so the UI's running state is visible. */

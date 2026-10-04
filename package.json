@@ -16,13 +16,15 @@
     "host:dev": "tsx host/server.ts",
     "host:probe": "tsx --env-file-if-exists=.env scripts/host-probe.ts",
     "runs:inspect": "tsx --env-file-if-exists=.env scripts/inspect-runs.ts",
-    "insurance:run": "tsx --env-file-if-exists=.env scripts/run-insurance.ts"
+    "insurance:run": "tsx --env-file-if-exists=.env scripts/run-insurance.ts",
+    "followup:draft": "tsx --env-file-if-exists=.env scripts/draft-followup.ts"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",
     "@modelcontextprotocol/sdk": "^1.32.0",
     "@prisma/client": "^6.19.3",
     "next": "^16.3.8",
+    "nodemailer": "^7.0.13",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.5"
@@ -30,6 +32,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.4",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "postcss": "^8.5.28",

@@ -10,6 +10,7 @@ import { VirtualClock } from "../src/lib/swarm/clock";
 import { holdMeta } from "../src/lib/rules/schedule-rules";
 import { PRACTICE } from "../src/lib/config";
 import { computeReminderTime, computeSendTime, formatLength, generateEmail, renderEmailHtml } from "../src/lib/followup";
+import { draftFollowUp, GAVIN_FOLLOW_UP } from "../src/lib/followup-actions";
 
 process.env.MOCK_LATENCY_MS = "0";
 process.env.GEMINI_API_KEY = ""; // the seed never calls a model
@@ -32,7 +33,7 @@ async function reset() {
   await prisma.patient.deleteMany();
 }
 
-type P = { id: string; name: string; initials?: string; ageYears?: number; allergies?: string[]; insuranceNote?: string };
+type P = { id: string; name: string; initials?: string; ageYears?: number; allergies?: string[]; insuranceNote?: string; email?: string };
 
 async function patients() {
   const list: P[] = [
@@ -41,6 +42,7 @@ async function patients() {
     { id: "P-1077", name: "Elena V.", initials: "EV" },
     { id: "P-1088", name: "Elena V.", initials: "EV" },
     { id: "P-1093", name: "Priya S.", initials: "PS" },
+    { id: "P-1120", name: "Gavin Huang", initials: "GH", email: "gah016@ucsd.edu" },
     ...["P-1101", "P-1102", "P-1110", "P-1104", "P-1061", "P-0988", "P-1095", "P-1106", "P-1032", "P-1107", "P-1112", "P-1080", "P-1081", "P-1066", "P-1083", "P-1084", "P-1085", "P-1086", "P-1087", "P-1089"].map(
       (id) => ({ id, name: "[NAME]" }),
     ),
@@ -53,7 +55,7 @@ async function patients() {
         initials: p.initials ?? "··",
         dob: "[DATE]",
         ageYears: p.ageYears ?? null,
-        email: "[EMAIL]",
+        email: p.email ?? "[EMAIL]",
         allergies: p.allergies ?? [],
         premedicationRequired: false,
         flags: [],
@@ -63,7 +65,7 @@ async function patients() {
           create: [
             { purpose: "treatment", granted: true, recordRef: "[ID]", timestamp: at("2026-09-01T09:00:00Z") },
             { purpose: "ai_analysis", granted: true, recordRef: "[ID]", timestamp: at("2026-09-01T09:00:00Z") },
-            ...(p.id === "P-1077" ? [{ purpose: "marketing_email", granted: true, recordRef: "[ID]", timestamp: at("2026-09-01T09:00:00Z") }] : []),
+            ...(p.id === "P-1077" || p.id === "P-1120" ? [{ purpose: "marketing_email", granted: true, recordRef: "[ID]", timestamp: at("2026-09-01T09:00:00Z") }] : []),
           ],
         },
       },
@@ -259,6 +261,9 @@ async function followUps() {
       model: email.model,
     },
   });
+
+  // Template draft here (the seed never calls a model); `npm run followup:draft FU-1120` rewrites it with Gemini.
+  await draftFollowUp({ ...GAVIN_FOLLOW_UP, forceMock: true });
 }
 
 async function main() {

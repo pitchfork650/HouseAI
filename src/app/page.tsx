@@ -83,7 +83,7 @@ export default async function LandingPage() {
             <HeroDemo patientId={HERO_XRAY.patientId} studyLabel={HERO_XRAY.studyLabel} dayLabel={dayEyebrow(DEFAULT_DAY)} agents={HERO_AGENTS} findings={HERO_FINDINGS} imageSrc={HERO_XRAY.src} />
           </ScrollTilt>
           <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">
-            A real, de-identified X-ray ({HERO_XRAY.credit}). Decision support only.
+            A real, de-identified panoramic X-ray. Decision support only.
           </p>
         </div>
       </header>

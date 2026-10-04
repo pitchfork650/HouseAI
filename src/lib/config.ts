@@ -1,11 +1,15 @@
-/** Practice details stay literal placeholders until the clinic fills them in. */
+/**
+ * Practice details. Defaults are the client practice; each can be overridden by env.
+ * Details we don't have yet (phone, email domain, prices) stay literal placeholders.
+ */
 export const PRACTICE = {
-  doctorName: "Dr. [NAME]",
-  doctorShort: "DR. [NAME]",
-  practiceName: "[PRACTICE NAME]",
-  fromAddress: "care@[practice].com",
-  phone: "[PHONE]",
-  signedInInitials: "DR",
+  doctorName: process.env.NEXT_PUBLIC_DOCTOR_NAME || "Dr. Leo C. Yang",
+  doctorShort: process.env.NEXT_PUBLIC_DOCTOR_SHORT || "DR. YANG",
+  practiceName: process.env.NEXT_PUBLIC_PRACTICE_NAME || "Leo C. Yang, DDS",
+  specialty: process.env.NEXT_PUBLIC_PRACTICE_SPECIALTY || "Cosmetic & restorative dentistry",
+  fromAddress: process.env.PRACTICE_EMAIL || "care@[practice].com",
+  phone: process.env.PRACTICE_PHONE || "[PHONE]",
+  signedInInitials: process.env.NEXT_PUBLIC_DOCTOR_INITIALS || "LY",
 };
 
 /** Default records each nav item opens. */

@@ -2,6 +2,7 @@ import { prisma } from "./db";
 import { audit } from "./audit";
 import { mailer } from "./mail";
 import { now } from "./clock";
+import { PRACTICE } from "./config";
 
 async function hasEmailConsent(patientId: string) {
   const c = await prisma.consent.findFirst({ where: { patientId, purpose: "marketing_email" }, orderBy: { timestamp: "desc" } });
@@ -17,7 +18,7 @@ export async function approveFollowUp(id: string, actor = "user:dentist") {
 /** Test send goes to the clinic, not the patient, so it doesn't need the patient's consent. */
 export async function sendTest(id: string, actor = "user:dentist") {
   const fu = await prisma.followUp.findUniqueOrThrow({ where: { id } });
-  const r = await mailer.send({ to: "care@[practice].com", subject: `[TEST] ${fu.subject}`, html: fu.html, tag: "test" });
+  const r = await mailer.send({ to: PRACTICE.fromAddress, subject: `[TEST] ${fu.subject}`, html: fu.html, tag: "test" });
   await audit({ actor, action: "followup.send_test", entity: "FollowUp", entityId: id, details: { messageId: r.id } });
   return r;
 }

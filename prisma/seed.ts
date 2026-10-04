@@ -8,6 +8,7 @@ import { startDiagnosticRun } from "../src/lib/swarm/diagnostic/run";
 import { startInsuranceRun } from "../src/lib/swarm/insurance/run";
 import { VirtualClock } from "../src/lib/swarm/clock";
 import { holdMeta } from "../src/lib/rules/schedule-rules";
+import { PRACTICE } from "../src/lib/config";
 import { computeReminderTime, computeSendTime, formatLength, generateEmail, renderEmailHtml } from "../src/lib/followup";
 
 process.env.MOCK_LATENCY_MS = "0";
@@ -134,7 +135,7 @@ async function insurance() {
 async function schedule() {
   await prisma.provider.createMany({
     data: [
-      { id: "LD", name: "Dr. [LEAD]", initials: "LD", chair: "Chair 1 · cosmetic", order: 0, skills: ["cosmetic", "restorative", "consult", "checkup", "emergency", "post-op"] },
+      { id: "LD", name: PRACTICE.doctorName, initials: PRACTICE.signedInInitials, chair: "Chair 1 · cosmetic", order: 0, skills: ["cosmetic", "restorative", "consult", "checkup", "emergency", "post-op"] },
       { id: "AS", name: "Dr. [ASSOCIATE]", initials: "AS", chair: "Chair 2 · surgery", order: 1, skills: ["surgery", "endo", "implant", "restorative", "cosmetic", "checkup", "emergency", "consult"] },
       { id: "HY", name: "[HYGIENIST]", initials: "HY", chair: "Hygiene", order: 2, workEnd: 16 * 60, skills: ["hygiene"] },
     ],

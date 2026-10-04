@@ -35,12 +35,3 @@ export async function geminiJSON(o: { system: string; prompt: string; images?: I
   const text = res.text ?? "";
   return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
 }
-
-export async function geminiText(o: { system: string; prompt: string; signal?: AbortSignal }): Promise<string> {
-  const res = await ai().models.generateContent({
-    model: model(),
-    contents: [{ role: "user", parts: [{ text: o.prompt }] }],
-    config: { systemInstruction: o.system, temperature: 0.4, abortSignal: o.signal },
-  });
-  return res.text ?? "";
-}

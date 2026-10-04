@@ -1,5 +1,5 @@
 import type { ZodType } from "zod";
-import { geminiJSON, geminiText } from "./gemini";
+import { geminiJSON } from "./gemini";
 
 /**
  * Every model call in the app goes through this module. With no GEMINI_API_KEY
@@ -19,8 +19,6 @@ export type JSONCall<T> = {
   forceMock?: boolean;
   signal?: AbortSignal;
 };
-
-export type TextCall = Omit<JSONCall<string>, "schema" | "images">;
 
 export type ModelResult<T> = { data: T; model: string; mocked: boolean };
 
@@ -56,15 +54,6 @@ export async function callJSON<T>(c: JSONCall<T>): Promise<ModelResult<T>> {
   assertResidency();
   const raw = await geminiJSON({ system: c.system, prompt: c.prompt, images: c.images, signal: c.signal });
   return { data: c.schema.parse(raw), model: modelName(), mocked: false };
-}
-
-export async function callText(c: TextCall): Promise<ModelResult<string>> {
-  if (c.forceMock || llmMode() === "mock") {
-    await mockDelay(c.signal);
-    return { data: c.mock(), model: MOCK_MODEL, mocked: true };
-  }
-  assertResidency();
-  return { data: await geminiText({ system: c.system, prompt: c.prompt, signal: c.signal }), model: modelName(), mocked: false };
 }
 
 /** Data residency: with enforcement on, only Vertex AI in an EU region is allowed. */

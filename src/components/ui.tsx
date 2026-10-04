@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PRIO, asPriority } from "@/lib/priority";
 import { Icon } from "./icons";
 
@@ -20,14 +19,6 @@ export function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" }) {
   return <button {...props} className={`${variant === "primary" ? btnPrimary : btnSecondary} px-4 ${className}`} />;
-}
-
-export function ButtonLink({ href, variant = "secondary", className = "", children }: { href: string; variant?: "primary" | "secondary"; className?: string; children: React.ReactNode }) {
-  return (
-    <Link href={href} className={`${variant === "primary" ? btnPrimary : btnSecondary} px-4 ${className}`}>
-      {children}
-    </Link>
-  );
 }
 
 /** Tint priority pill (tables). */

@@ -66,10 +66,6 @@ export function eligibilityLane(policy: PolicyRef, adapter: CarrierAdapter, fall
 }
 
 /** Re-run a retrying eligibility lane through the phone line. */
-export function phoneRetryLane(policy: PolicyRef, phone: MockPhoneLine): AgentSpec<LaneInput, EligibilityOutput> {
-  return eligibilityLane({ ...policy }, phone);
-}
-
 export function copayLane(policy: PolicyRef, adapter: CarrierAdapter, codes: string[]): AgentSpec<LaneInput, CopayOutput> {
   return {
     name: "Copay Chaser",

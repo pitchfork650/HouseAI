@@ -18,13 +18,6 @@ export function hhmm(d: Date | string): string {
   return x.toISOString().slice(11, 16);
 }
 
-export function minToLabel(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  const h12 = h > 12 ? h - 12 : h;
-  return `${h12}${m ? ":" + String(m).padStart(2, "0") : ""} ${h < 12 ? "am" : "pm"}`;
-}
-
 export function dateFromISODate(date: string, minutes = 0): Date {
   const d = new Date(`${date}T00:00:00Z`);
   return new Date(d.getTime() + minutes * 60_000);

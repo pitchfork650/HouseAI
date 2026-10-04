@@ -33,3 +33,6 @@ prisma/test.db*
 
 # Downloaded datasets (DENTEX)
 .cache/
+
+# Generated Postgres schema (scripts/prisma.mjs)
+prisma/postgres/

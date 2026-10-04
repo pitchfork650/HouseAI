@@ -1,6 +1,7 @@
 // HouseAI Dental data model.
-// SQLite in dev; kept Postgres-compatible (no SQLite-only types). To switch, set
-// provider = "postgresql" and point DATABASE_URL at Postgres.
+// SQLite in dev and tests; Postgres (Supabase) in production. Kept compatible with
+// both (no SQLite-only types). scripts/prisma.mjs derives the Postgres schema when
+// DATABASE_URL is a postgres:// URL; always run Prisma through it (npm run db:push etc.).
 // Times of day are stored as clinic wall-clock values: `date` strings (YYYY-MM-DD)
 // plus minutes from midnight for appointments, and DateTime values read in UTC.
 

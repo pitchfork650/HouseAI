@@ -10,7 +10,7 @@ import { Icon, LogoTile, type IconName } from "@/components/icons";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { HeroDemo, type DemoFinding } from "@/components/landing/HeroDemo";
 import { Workflow, type WorkflowStep } from "@/components/landing/Workflow";
-import { CountUp, Reveal, ScrollTilt, Words } from "@/components/landing/Motion";
+import { Reveal, ScrollTilt, Words } from "@/components/landing/Motion";
 import { CalendarVisual, FollowupVisual, InsuranceVisual, IntakeVisual, SwarmVisual } from "@/components/landing/Visuals";
 
 export const dynamic = "force-dynamic";
@@ -31,17 +31,14 @@ function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: 
 }
 
 export default async function LandingPage() {
-  const [items, apptsToday, followUps, run] = await Promise.all([
+  const [items, run] = await Promise.all([
     navItems(),
-    prisma.appointment.count({ where: { date: DEFAULT_DAY, isHold: false } }),
-    prisma.followUp.count({ where: { status: { in: ["draft", "approved"] } } }),
     prisma.swarmRun.findFirst({
       where: { kind: "diagnostic" },
       orderBy: { startedAt: "desc" },
       include: { agents: { orderBy: { order: "asc" } }, findings: { orderBy: { order: "asc" } } },
     }),
   ]);
-  const awaitingSignOff = items.find((i) => i.key === "diagnostics")?.count ?? 0;
   const agents = (run?.agents ?? []).map((a) => ({ name: a.name, badge: a.badge, status: a.status }));
   const findings: DemoFinding[] = (run?.findings ?? [])
     .map((f) => ({
@@ -59,13 +56,6 @@ export default async function LandingPage() {
     row.steps.map((s) => ({ num: s.num.split(" ")[0], title: s.title, icon: s.icon, tag: s.tag, body: s.body, swarm: s.swarm, href: s.href })),
   );
   const loop = FLOW_ROWS.find((r) => r.loopsBack)?.loopsBack;
-
-  const stats = [
-    { value: apptsToday, label: "appointments booked automatically for the demo clinic's day" },
-    { value: agents.length, label: "specialist agents read every panoramic X-ray" },
-    { value: awaitingSignOff, label: "findings waiting on the dentist, never auto-charted" },
-    { value: followUps, label: "personalized follow-ups drafted and queued" },
-  ];
 
   const security: { icon: IconName; title: string; body: string }[] = [
     { icon: "check", title: "The dentist signs off", body: "Agents suggest. Every clinical finding waits for your dentist before it touches the chart." },
@@ -113,20 +103,6 @@ export default async function LandingPage() {
           <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">Synthetic demo patient. Decision support only.</p>
         </div>
       </header>
-
-      {/* Stats */}
-      <section className="mx-auto max-w-[1200px] px-6 pb-8 pt-24 max-[640px]:px-4 max-[640px]:pt-16">
-        <div className="grid grid-cols-4 border-y border-lp-line max-[900px]:grid-cols-2">
-          {stats.map((s, i) => (
-            <Reveal key={s.label} delay={i * 80} className="flex flex-col gap-2 border-lp-line px-6 py-8 [&:not(:first-child)]:border-l max-[900px]:[&:nth-child(3)]:border-l-0 max-[900px]:[&:nth-child(n+3)]:border-t max-[640px]:px-4">
-              <span className="text-[44px] font-semibold leading-none tracking-[-0.04em] text-lp-ink max-[640px]:text-[34px]">
-                <CountUp value={s.value} />
-              </span>
-              <span className="max-w-[220px] text-[14px] leading-[1.5] text-lp-muted">{s.label}</span>
-            </Reveal>
-          ))}
-        </div>
-      </section>
 
       {/* Product */}
       <section id="product" className="mx-auto max-w-[1200px] scroll-mt-20 px-6 py-24 max-[640px]:px-4 max-[640px]:py-16">

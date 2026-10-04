@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { DEFAULT_ROUTES } from "@/lib/config";
-import { demoDiagnosticRun } from "@/lib/demo";
+import { demoDiagnosticRun, publicStudy } from "@/lib/demo";
+import { AGENT_ORDER } from "@/lib/swarm/diagnostic/agents";
 import { dayEyebrow } from "@/lib/clock";
 import { navItems } from "@/lib/nav";
 import { DEFAULT_DAY } from "@/lib/schedule";
@@ -32,10 +33,22 @@ function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: 
 }
 
 export default async function LandingPage() {
-  const [items, run] = await Promise.all([navItems(), demoDiagnosticRun()]);
-  const heroPatient = run?.patientId;
+  const [items, demo, study] = await Promise.all([navItems(), demoDiagnosticRun({ publicSite: true }), publicStudy()]);
+  // A real, licensed X-ray the swarm hasn't read yet beats the generated sample image.
+  const pending = !demo.real && !!study;
+  // While pending, nothing from the sample run (agents, findings, patient) is shown.
+  const run = pending ? null : demo.run;
+  const heroPatient = pending ? study!.patientId : run?.patientId;
+  const heroStudy = pending ? study : run?.study;
+  const STUDY_LABELS: Record<string, string> = { pano: "Panoramic X-ray", bitewing: "Bitewing X-ray", pa: "Periapical X-ray", cbct: "CBCT slice" };
+  const studyLabel = heroStudy ? STUDY_LABELS[heroStudy.type] ?? "X-ray" : "Panoramic X-ray";
+  // Attribution without the licence URL (the licence name is enough on the page).
+  const credit = heroStudy?.source?.replace(/\s*\(https?:[^)]*\)/, "");
   const demoHref = heroPatient ? `/diagnostics/${heroPatient}` : DEFAULT_ROUTES.diagnostics;
-  const agents = (run?.agents ?? []).map((a) => ({ name: a.name, badge: a.badge, status: a.status }));
+  const imageSrc = demo.real && run?.studyId ? `/api/studies/${run.studyId}/file` : pending ? `/api/studies/${study!.id}/file` : undefined;
+  const agents = pending
+    ? AGENT_ORDER.map((name) => ({ name, badge: "Queued", status: "queued" }))
+    : (run?.agents ?? []).map((a) => ({ name: a.name, badge: a.badge, status: a.status }));
   const findings: DemoFinding[] = (run?.findings ?? [])
     .map((f) => ({
       teeth: f.teeth as number[],
@@ -95,11 +108,23 @@ export default async function LandingPage() {
         <div className="lp-rise relative mx-auto mt-16 max-w-[1200px] px-6 max-[640px]:mt-10 max-[640px]:px-3" style={{ animationDelay: "850ms" }}>
           <ScrollTilt>
             {heroPatient ? (
-              <HeroDemo patientId={heroPatient} dayLabel={dayEyebrow(DEFAULT_DAY)} agents={agents} findings={findings} />
+              <HeroDemo
+                patientId={heroPatient}
+                pending={pending}
+                studyLabel={studyLabel}
+                dayLabel={pending || !run ? "NOT READ YET" : demo.real && run.study ? `READ ${run.startedAt.toISOString().slice(0, 10)} · ${Math.round(((run.finishedAt ?? run.startedAt).getTime() - run.startedAt.getTime()) / 1000)} S` : dayEyebrow(DEFAULT_DAY)}
+                agents={agents}
+                findings={findings}
+                imageSrc={imageSrc}
+              />
             ) : null}
           </ScrollTilt>
           <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">
-            Synthetic demo patient. Decision support only.
+            {pending
+              ? `A real, de-identified X-ray (${credit}). The agent swarm hasn't read it yet; its findings appear here once it has.`
+              : imageSrc
+              ? `A real, de-identified X-ray${credit ? ` (${credit})` : ""}, read by the agent swarm${run?.agents.find((a) => a.model)?.model ? ` on ${run.agents.find((a) => a.model)!.model}` : ""}. Decision support only.`
+              : "Synthetic demo patient. Decision support only."}
           </p>
         </div>
       </header>

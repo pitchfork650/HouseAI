@@ -5,7 +5,7 @@ AI agent swarms read every X-ray, fill the calendar, chase insurance and bring p
 
 - **Live demo:** [DEMO URL]
 - **Video:** [VIDEO URL]
-- **Code:** https://github.com/pitchfork650/HouseAI
+- **Code:** https://github.com/ryunzz/HouseAI
 - **Team:** [TEAM NAMES]
 
 ---

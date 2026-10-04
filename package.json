@@ -18,8 +18,8 @@
     "runs:inspect": "tsx --env-file-if-exists=.env scripts/inspect-runs.ts",
     "insurance:run": "tsx --env-file-if-exists=.env scripts/run-insurance.ts",
     "followup:draft": "tsx --env-file-if-exists=.env scripts/draft-followup.ts",
-    "dentex:import": "tsx --env-file-if-exists=.env scripts/import-dentex.ts",
-    "dentex:eval": "tsx --env-file-if-exists=.env scripts/eval-dentex.ts"
+    "xrays:import": "tsx --env-file-if-exists=.env scripts/import-bitewings.ts",
+    "xrays:eval": "tsx --env-file-if-exists=.env scripts/eval-xrays.ts"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",

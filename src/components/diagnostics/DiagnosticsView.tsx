@@ -9,9 +9,10 @@ import { PRIO, asPriority } from "@/lib/priority";
 import type { RunView } from "@/lib/views";
 import type { OverlayShape } from "@/lib/pano";
 import { FAMILY_TEXT, type Comparison } from "@/lib/ground-truth";
+import { FRAME, fit } from "@/lib/xray-frame";
 import { Overlay, SyntheticPano } from "./Pano";
 
-export type StudyView = { id: string; type: string; takenAt: string; synthetic: boolean } | null;
+export type StudyView = { id: string; type: string; takenAt: string; synthetic: boolean; width?: number | null; height?: number | null } | null;
 
 const TYPE_LABEL: Record<string, string> = { pano: "PANORAMIC", bitewing: "BITEWINGS", pa: "PERIAPICAL", cbct: "CBCT", intraoral: "INTRAORAL" };
 
@@ -258,6 +259,8 @@ function XrayViewer({ study, findings, truth }: { study: StudyView; findings: Ru
   const [contrast, setContrast] = useState(false);
   const [measure, setMeasure] = useState(false);
   const label = study ? `${TYPE_LABEL[study.type] ?? study.type.toUpperCase()} · ${study.takenAt.slice(0, 10)} ${study.takenAt.slice(11, 16)}` : "NO IMAGES YET";
+  // Real images are letterboxed into the 800×400 overlay frame; crop the view to the image itself.
+  const box = study && !study.synthetic && study.width && study.height ? (() => { const f = fit(study.width, study.height); return { x: f.ox, y: f.oy, w: study.width * f.s, h: study.height * f.s }; })() : { x: 0, y: 0, w: FRAME.width, h: FRAME.height };
   const tool = (on: boolean) => `flex h-10 w-10 items-center justify-center rounded-[8px] border ${on ? "border-teal bg-[#0B2A33]" : "border-[#243246] bg-[#0D1520]"}`;
 
   return (
@@ -294,12 +297,12 @@ function XrayViewer({ study, findings, truth }: { study: StudyView; findings: Ru
       </div>
       <div className="overflow-auto">
         <svg
-          viewBox="0 0 800 400"
+          viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`}
           width={zoom ? "160%" : "100%"}
           className="block"
           style={{ filter: contrast ? "contrast(1.5) brightness(1.1)" : undefined }}
           role="img"
-          aria-label={study?.synthetic ? "Sample panoramic X-ray with AI-flagged regions" : "Uploaded X-ray with AI-flagged regions"}
+          aria-label={study?.synthetic ? "Sample panoramic X-ray with AI-flagged regions" : "X-ray with AI-flagged regions"}
         >
           {study && !study.synthetic ? (
             <image href={`/api/studies/${study.id}/file`} x="0" y="0" width="800" height="400" preserveAspectRatio="xMidYMid meet" />
@@ -351,7 +354,7 @@ function TruthCard({ truth, running }: { truth: NonNullable<TruthView>; running:
         <>
           <p className="m-0 text-[14px] text-ink-2">
             The swarm{truth.model && truth.model !== "mock" ? ` (${truth.model})` : truth.model === "mock" ? " (mock replay, not a real read)" : ""} found <b>{c.matched.length} of {total}</b> labelled problems
-            {c.extra.length ? `, and flagged ${c.extra.length} the labels don't include` : ""}. Matching is by tooth and kind of problem (caries, periapical lesion, impacted tooth).
+            {c.extra.length ? `, and flagged ${c.extra.length} the labels don't include` : ""}. {c.matched.concat(c.missed).some((x) => x.tooth != null) ? "Matching is by tooth and kind of problem." : "A lesion counts as found when an AI box of the same kind overlaps the experts' box."}
           </p>
           <div className="flex flex-col gap-2 text-[13px]">
             {[
@@ -363,8 +366,8 @@ function TruthCard({ truth, running }: { truth: NonNullable<TruthView>; running:
                 <div key={g.title} className="flex flex-wrap items-center gap-2">
                   <span className="w-[104px] flex-none font-semibold text-ink">{g.title}</span>
                   {g.items.map((x) => (
-                    <span key={`${x.family}${x.tooth}`} className={pill(g.tone)}>
-                      #{x.tooth} {FAMILY_TEXT[x.family].toLowerCase()}
+                    <span key={`${x.family}${x.tooth ?? x.ref}`} className={pill(g.tone)}>
+                      {x.tooth != null ? `#${x.tooth}` : x.ref?.startsWith("L") ? x.ref : ""} {FAMILY_TEXT[x.family].toLowerCase()}
                     </span>
                   ))}
                 </div>

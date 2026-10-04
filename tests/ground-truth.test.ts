@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareToGroundTruth, fdiToUniversal, type GroundTruth } from "@/lib/ground-truth";
+import { compareByBox, compareToGroundTruth, consensusBoxes, fdiToUniversal, type GroundTruth } from "@/lib/ground-truth";
 import { box2dToOverlay, pixelBoxToOverlay } from "@/lib/xray-frame";
 
 describe("ground truth", () => {
@@ -27,6 +27,39 @@ describe("ground truth", () => {
     expect(c.missed).toEqual([{ tooth: 20, family: "periapical" }]);
     expect(c.extra).toEqual([{ tooth: 3, family: "caries" }]);
     expect(c.unscored).toEqual([{ teeth: [14], condition: "open_margin" }]);
+  });
+});
+
+describe("box-only labels", () => {
+  it("keeps lesions most experts marked and averages their boxes", () => {
+    const b = (x: number) => ({ x, y: 0, w: 10, h: 10 });
+    const out = consensusBoxes(
+      [
+        { annotator: "E1", box: b(0) },
+        { annotator: "E2", box: b(2) },
+        { annotator: "E3", box: b(1) },
+        { annotator: "E1", box: b(100) }, // only one expert
+      ],
+      3,
+    );
+    expect(out).toEqual([{ votes: 3, box: { x: 1, y: 0, w: 10, h: 10 } }]);
+  });
+
+  it("matches reported boxes to labelled boxes by overlap and family", () => {
+    const c = compareByBox(
+      [
+        { condition: "caries_enamel", boxes: [{ x: 0, y: 0, w: 30, h: 30 }, { x: 200, y: 0, w: 10, h: 10 }] },
+        { condition: "open_margin", boxes: [{ x: 50, y: 50, w: 5, h: 5 }] },
+      ],
+      [
+        { family: "caries", box: { x: 5, y: 5, w: 10, h: 10 } },
+        { family: "caries", box: { x: 400, y: 0, w: 10, h: 10 } },
+      ],
+    );
+    expect(c.matched).toEqual([{ ref: "L1", family: "caries" }]);
+    expect(c.missed).toEqual([{ ref: "L2", family: "caries" }]);
+    expect(c.extra).toEqual([{ ref: "R2", family: "caries" }]);
+    expect(c.unscored).toHaveLength(1);
   });
 });
 

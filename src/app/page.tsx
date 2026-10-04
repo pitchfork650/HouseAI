@@ -32,7 +32,7 @@ function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: 
 }
 
 export default async function LandingPage() {
-  const [items, demo] = await Promise.all([navItems(), demoDiagnosticRun()]);
+  const [items, demo] = await Promise.all([navItems(), demoDiagnosticRun({ publicSite: true })]);
   const run = demo.run;
   const demoHref = run ? `/diagnostics/${run.patientId}` : DEFAULT_ROUTES.diagnostics;
   const imageSrc = demo.real && run?.studyId ? `/api/studies/${run.studyId}/file` : undefined;

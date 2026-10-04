@@ -5,9 +5,9 @@
 - **Project name:** HouseAI Dental
 - **Elevator pitch** (max 200 characters): AI agent swarms read dental X-rays, build the schedule, chase insurance and send follow-ups, all on one patient record, while the dentist signs off on every finding.
 - **Team:** Gavin Huang, Justin Thai, Aryn Ni
-- **Try it out:** [DEMO URL] · https://github.com/ryunzz/HouseAI
+- **Try it out:** [DEMO URL] · https://github.com/ryunzz/HouseAI (the clinic app) · https://github.com/ryunzz/edit (post-op video maker)
 - **Video:** [VIDEO URL]
-- **Built with:** nextjs, react, typescript, tailwindcss, prisma, postgresql, supabase, vercel, google-gemini, model-context-protocol, openswarm, zod, vitest
+- **Built with:** nextjs, react, typescript, tailwindcss, prisma, postgresql, supabase, vercel, google-gemini, model-context-protocol, openswarm, zod, vitest, bun, ffmpeg, headless-chromium
 
 ---
 
@@ -15,9 +15,26 @@
 
 ## Inspiration
 
+We didn't start from a feature list. We started by talking to a practicing cosmetic and restorative dentist, [CLIENT NAME / "a cosmetic dentist in CITY"], and asking where the day actually goes. [HOW MANY] conversations later, the answer was clear: the clinical work is the part they love, and almost everything around it leaks time and money.
+
+> "[CLIENT QUOTE: the problem in their words]"
+
 A dental practice runs on two separate jobs. One is clinical: reading X-rays, spotting what needs treatment, deciding what comes first. The other is admin: booking the chair, checking insurance, explaining costs and getting patients back for their next visit. The admin side takes hours from the front desk, and it's where patients fall through the cracks: an insurance check that never finished, a recall email that never went out, a crown that never got booked.
 
-We built HouseAI for cosmetic and restorative practices, working with a real cosmetic-dentistry client. The goal is that once an X-ray is taken, everything after it happens without staff re-typing anything. The dentist stays in charge of every clinical decision.
+### What our client asked for, and what they'd pay for it
+
+We asked them to rank what they'd want, then asked what each piece would be worth to them. Every module in HouseAI maps to something they asked for:
+
+| What they asked for | In their words | What they'd pay | What we built |
+|---|---|---|---|
+| [ASK 1, e.g. a second opinion on X-rays] | "[QUOTE]" | [$ / month or per use] | Swarm diagnostics: 7 agents, agreement score, dentist sign-off |
+| [ASK 2, e.g. stop insurance phone tag] | "[QUOTE]" | [$] | Insurance swarm with independent lanes and a cost split |
+| [ASK 3, e.g. a full calendar without the juggling] | "[QUOTE]" | [$] | Calendar auto-fill with the practice's own rules |
+| [ASK 4, e.g. patients coming back after big cases] | "[QUOTE]" | [$] | Follow-up emails with a post-op video for that procedure |
+
+> "[CLIENT QUOTE: the line about paying for it]"
+
+The goal: once an X-ray is taken, everything after it happens without staff re-typing anything, and the dentist stays in charge of every clinical decision. Inside the app, HouseAI is personalized for our client's practice; the public site stays generic so any clinic can try it.
 
 ## What it does
 
@@ -37,7 +54,7 @@ HouseAI follows one patient record through seven steps:
 
    Anything that can't be placed lands in a "Needs input" queue with the reason.
 6. **Insurance swarm.** One agent per insurer checks eligibility, a copay agent looks up coverage by procedure code, and a pre-approval agent files with the X-rays attached. The lanes are independent. In the demo, Carrier B's portal times out twice, so that lane schedules a phone-line retry for 14:00 while every other lane finishes. The patient's share is split across both insurers from the results.
-7. **Follow-up.** A personalized aftercare email with a short video for that procedure goes out the morning after the visit, with a link to book the next check. It only sends with email consent, and a reminder goes out on day 12 if the patient hasn't booked.
+7. **Follow-up.** A personalized aftercare email goes out the morning after the visit with a short **post-op video for that exact procedure** (veneers, extraction, root canal, crown seat, whitening, checkup) and a link to book the next check. The videos are made with **edit**, our second repo (see below). It only sends with email consent, and a reminder goes out on day 12 if the patient hasn't booked.
 
 The record then **loops back**: at the next recall X-ray, HouseAI compares the new findings with the last ones, tooth by tooth, and flags what's new, what got worse and what's unchanged.
 
@@ -64,6 +81,11 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
   - We tested the diagnostic swarm on real, de-identified research X-rays and scored it against expert labels: what it found, what it missed, and what it flagged that the labels don't have.
   - Research datasets are non-commercial, so they stay inside the app.
   - The public demo uses a periapical X-ray licensed for commercial use (Wikimedia Commons, CC BY-SA 4.0), credited on the page.
+- **Post-op videos with edit** ([github.com/ryunzz/edit](https://github.com/ryunzz/edit)): we built a second tool so a coding agent can make the procedure videos the follow-up emails send.
+  - Each video is a React component driven by the frame number. edit renders it to MP4 **on our own machine** with headless Chromium and ffmpeg, so patient-facing content never goes through a third-party video service.
+  - The agent works through edit's MCP tools: it renders single frames and contact sheets to **check its own work**, reads timing from audio beat analysis, and queues the final render.
+  - A local studio shows a live preview, timeline, assets and renders. Renders are deterministic (no timers or `Math.random()`), so a re-render of the same video is frame-for-frame identical.
+  - Each procedure gets one video in HouseAI's video library, and the follow-up email picks the one that matches the visit.
 - **Tests:** 45 Vitest tests. They cover the prioritizer, consensus scoring, the coordinator's timeouts and retries, independent insurance lanes, calendar auto-fill, CSV parsing, follow-up consent, recall comparison, GDPR erasure, and the MCP host round trip against our reference server.
 
 ## Challenges we ran into
@@ -76,6 +98,7 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
 
 ## Accomplishments that we're proud of
 
+- Every module traces back to something a real dentist asked for and put a price on. We built what our client said they'd pay for, not what we guessed they'd want.
 - The full patient journey works end to end: X-ray, findings, treatment plan, booked schedule, verified insurance, follow-up email and recall.
 - It runs with **zero credentials** in mock mode and switches to live models or a remote OpenSwarm host with a config change.
 - A Skeptic agent and agreement scoring mean the dentist sees *how sure* the swarm is, not just what it thinks.
@@ -83,16 +106,18 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
 
 ## What we learned
 
+- Talking to the client first changed what we built. [WHAT CHANGED, e.g. a feature we dropped or one we added after hearing them out.]
 - Agent swarms earn their keep when the work naturally splits into independent jobs, like separate insurers or separate specialists, and when one part failing shouldn't stop the rest. Where a rule does the job, a rule is better.
 - Validating every model output against a schema, and saving every run, makes AI features debuggable and auditable.
 - In healthcare, the hard part isn't getting a model to answer. It's provenance, consent, sign-off and knowing what the system *didn't* check.
 
 ## What's next for House AI
 
+- **Pilot with our client:** run HouseAI on their real schedule and their own de-identified X-rays at the price point they gave us, with their feedback going into new prompt versions.
 - **OpenSwarm host:** connect the real OpenSwarm desktop app behind our MCP contract. The client side and a reference server are done.
 - **Practice software:** integrations with Eaglesoft and Dentrix, real insurer portals and an email provider, with the practice's approval.
 - **More imaging:** intraoral photos for the cosmetic Shade agent, and CBCT.
-- **Pilot:** a pilot with our client practice using their own de-identified X-rays, with dentist feedback fed back into prompt versions.
+- **More post-op videos:** one for every procedure in the practice's fee schedule, made with edit in the clinic's branding.
 
 ---
 

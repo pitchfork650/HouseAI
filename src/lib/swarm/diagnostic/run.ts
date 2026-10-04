@@ -2,10 +2,11 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db";
 import { audit } from "../../audit";
 import { assertMayUseModel } from "../../llm";
-import { invokeAgent, swarmHost } from "../host";
+import { diagnosticHost, invokeAgent, swarmHost } from "../host";
 import { loadPrompt } from "../../prompts";
 import { readFile } from "../../storage";
 import { panoSvg } from "../../pano";
+import { imageSize } from "../../image-size";
 import { registerAgents, runPhase, type AgentSpec } from "../coordinator";
 import { PrismaRunStore } from "../prisma-store";
 import { AGENT_ORDER, SKIP_PHRASES, SPECIALISTS, collectCandidates, skepticSpec, specialistSpec, verifierSpec, type DiagnosticInput, type ReviewInput } from "./agents";
@@ -42,7 +43,11 @@ export async function startDiagnosticRun(patientId: string, opts: { actor?: stri
   const synthetic = visit.every((s) => !s.fileUrl || s.fileUrl.startsWith("synthetic:"));
   const studies: DiagnosticInput["studies"] = [];
   for (const s of visit) {
-    if (s.fileUrl?.startsWith("storage:") && s.mimeType) studies.push({ type: s.type, image: { mimeType: s.mimeType, data: await readFile(s.fileUrl) } });
+    if (s.fileUrl?.startsWith("storage:") && s.mimeType) {
+      const data = await readFile(s.fileUrl);
+      const size = s.width && s.height ? { width: s.width, height: s.height } : imageSize(data);
+      studies.push({ type: s.type, image: { mimeType: s.mimeType, data }, ...size });
+    }
     // Seed studies are generated: send the panoramic as SVG so the host has something to read.
     else if (s.type === "pano") studies.push({ type: s.type, image: { mimeType: "image/svg+xml", data: Buffer.from(panoSvg()) } });
     else studies.push({ type: s.type });
@@ -54,7 +59,9 @@ export async function startDiagnosticRun(patientId: string, opts: { actor?: stri
 
   // Minimum context only: images, age, numbering system. No name, DOB or contact details.
   // Synthetic studies are fine to send to the swarm host (no real patient data).
-  const input: DiagnosticInput = { studies, context: { ageYears: patient.ageYears }, forceMock: false, runId: run.id };
+  // Gemini can't read the generated SVG pano, so synthetic seed studies replay the sample run there.
+  const forceMock = synthetic && diagnosticHost().kind === "gemini";
+  const input: DiagnosticInput = { studies, context: { ageYears: patient.ageYears }, forceMock, runId: run.id };
   const store = new PrismaRunStore(run.id, { studies: visit.map((s) => s.id), ageYears: patient.ageYears });
 
   const specialistSpecs = SPECIALISTS.map(specialistSpec);
@@ -96,6 +103,7 @@ async function execute(
   // Merge: agreement + prioritizer rules, then the consensus call explains each finding.
   const rows = mergeFindings(candidates, verifier, skeptic);
   const prompt = loadPrompt("consensus");
+  // The plain-language text is a nicety: if the call fails, keep the findings with template text.
   const consensus = await invokeAgent({
     name: "Consensus",
     slug: "consensus",
@@ -106,6 +114,11 @@ async function execute(
     schema: ConsensusOutputSchema,
     mock: () => mockConsensus(rows),
     forceMock: input.forceMock,
+    host: diagnosticHost(),
+  }).catch(async (e) => {
+    console.warn("[swarm] consensus call failed, using template text", e instanceof Error ? e.message.slice(0, 200) : e);
+    await audit({ actor: "Consensus", action: "swarm.diagnostic.consensus_fallback", entity: "SwarmRun", entityId: runId, details: { error: String(e).slice(0, 500) } });
+    return { data: mockConsensus(rows), model: "template", host: "mock" as const };
   });
   const text = new Map(consensus.data.rows.map((r) => [r.key, r.text]));
 

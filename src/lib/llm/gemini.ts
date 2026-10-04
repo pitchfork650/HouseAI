@@ -26,12 +26,32 @@ function parts(prompt: string, images?: ImagePart[]) {
   ];
 }
 
-export async function geminiJSON(o: { system: string; prompt: string; images?: ImagePart[]; signal?: AbortSignal }): Promise<unknown> {
-  const res = await ai().models.generateContent({
-    model: model(),
-    contents: [{ role: "user", parts: parts(o.prompt, o.images) }],
-    config: { systemInstruction: o.system, responseMimeType: "application/json", temperature: 0.2, abortSignal: o.signal },
-  });
+/** Rate limits (429) and overload (503) are common on free-tier keys: back off and retry. */
+async function withRetry<T>(fn: () => Promise<T>, signal?: AbortSignal, attempts = 4): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const status = (e as { status?: number }).status;
+      if (i >= attempts - 1 || signal?.aborted || (status !== 429 && status !== 503 && status !== 500)) throw e;
+      // A daily quota says "retry in 10h…": retrying now only burns time.
+      const wait = /retryDelay"?:\s*"(\d+)s"/.exec(String((e as Error).message))?.[1];
+      if (status === 429 && wait && Number(wait) > 60) throw e;
+      await new Promise((r) => setTimeout(r, 2000 * 2 ** i + Math.random() * 500));
+    }
+  }
+}
+
+export async function geminiJSON(o: { system: string; prompt: string; images?: ImagePart[]; signal?: AbortSignal; temperature?: number }): Promise<unknown> {
+  const res = await withRetry(
+    () =>
+      ai().models.generateContent({
+        model: model(),
+        contents: [{ role: "user", parts: parts(o.prompt, o.images) }],
+        config: { systemInstruction: o.system, responseMimeType: "application/json", temperature: o.temperature ?? 0.2, abortSignal: o.signal },
+      }),
+    o.signal,
+  );
   const text = res.text ?? "";
   return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
 }

@@ -11,11 +11,13 @@ export type AgentView = {
   result: string;
   log: { t: string; text: string }[];
   nextAttemptAt: string | null;
+  model: string | null;
 };
 
 export type FindingView = {
   id: string;
   teeth: number[];
+  condition: string;
   text: string;
   agreement: number;
   suggested: string;
@@ -58,10 +60,12 @@ export async function loadRun(id: string): Promise<RunView | null> {
       result: a.result,
       log: (a.log ?? []) as AgentView["log"],
       nextAttemptAt: a.nextAttemptAt?.toISOString() ?? null,
+      model: a.model,
     })),
     findings: r.findings.map((f) => ({
       id: f.id,
       teeth: f.teeth as number[],
+      condition: f.condition,
       text: f.text,
       agreement: f.agreement,
       suggested: f.suggested,

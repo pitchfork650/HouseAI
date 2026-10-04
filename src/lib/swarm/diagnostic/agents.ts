@@ -1,20 +1,22 @@
 import type { ImagePart } from "../../llm";
-import { agentSpecTimeoutMs, invokeAgent } from "../host";
+import { agentSpecTimeoutMs, diagnosticHost, invokeAgent } from "../host";
 import { loadPrompt } from "../../prompts";
 import type { AgentOutcome, AgentSpec } from "../coordinator";
 import { RULES, type Condition } from "../../rules/prioritize";
+import { box2dToOverlay } from "../../xray-frame";
 import {
   SkepticOutputSchema,
-  SpecialistOutputSchema,
+  SpecialistRawOutputSchema,
   VerifierOutputSchema,
   type Candidate,
   type SkepticOutput,
   type SpecialistOutput,
+  type SpecialistRawOutput,
   type VerifierOutput,
 } from "./schemas";
 import { MOCK_SPECIALISTS, mockSkeptic, mockVerifier } from "./mocks";
 
-export type StudyInput = { type: string; image?: ImagePart };
+export type StudyInput = { type: string; image?: ImagePart; width?: number; height?: number };
 
 /** Data minimization: agents see only the images plus the minimum context. */
 export type DiagnosticInput = {
@@ -49,6 +51,17 @@ function imagesFor(input: DiagnosticInput, needs: string[]) {
   return input.studies.filter((s) => needs.includes(s.type));
 }
 
+/** Map box_2d geometry (relative to the first image sent) into the 800×400 viewer frame. */
+export function normalizeOverlays(out: SpecialistRawOutput, img: { width?: number; height?: number } | undefined): SpecialistOutput {
+  return {
+    ...out,
+    findings: out.findings.map((f) => ({
+      ...f,
+      overlay: f.overlay.flatMap((o) => (o.kind !== "box2d" ? [o] : img?.width && img.height ? [box2dToOverlay(o.box_2d, o.label, { width: img.width, height: img.height })] : [])),
+    })),
+  };
+}
+
 function specialistBadge(out: SpecialistOutput): Pick<AgentOutcome, "status" | "badge"> {
   const urgent = out.findings.some((f) => RULES[f.condition as Condition].priority === "P1");
   if (urgent) return { status: "flag", badge: "Flagged" };
@@ -72,16 +85,23 @@ export function specialistSpec(def: SpecialistDef): AgentSpec<DiagnosticInput, S
         slug: def.slug,
         version: prompt.version,
         prompt: prompt.text,
-        context: { ageYears: input.context.ageYears, imageFrame: { width: 800, height: 400 }, studies: studies.map((s) => s.type) },
+        context: {
+          ageYears: input.context.ageYears,
+          studies: studies.map((s) => s.type),
+          // Real images: boxes as box_2d normalized to the image. The generated seed pano: the 800×400 frame.
+          geometry: studies[0]?.image?.mimeType === "image/svg+xml" ? { frame: { width: 800, height: 400 } } : { box_2d: "normalized 0-1000 to the first image" },
+        },
         images: studies.flatMap((s) => (s.image ? [s.image] : [])),
-        schema: SpecialistOutputSchema,
+        schema: SpecialistRawOutputSchema,
         mock: MOCK_SPECIALISTS[def.name],
         forceMock: input.forceMock,
+        host: diagnosticHost(),
         runId: input.runId,
         signal: ctx.signal,
       });
-      ctx.log(`${res.data.findings.length} finding(s)`);
-      return { ...specialistBadge(res.data), result: res.data.summary, output: res.data, model: res.model, promptVersion: prompt.version };
+      const data = normalizeOverlays(res.data, studies.find((s) => s.image));
+      ctx.log(`${data.findings.length} finding(s)`);
+      return { ...specialistBadge(data), result: data.summary, output: data, model: res.model, promptVersion: prompt.version };
     },
   };
 }
@@ -105,6 +125,7 @@ export const verifierSpec: AgentSpec<ReviewInput, VerifierOutput> = {
       schema: VerifierOutputSchema,
       mock: () => mockVerifier(input.candidates),
       forceMock: input.forceMock,
+      host: diagnosticHost(),
       runId: input.runId,
       signal: ctx.signal,
     });
@@ -132,6 +153,7 @@ export const skepticSpec: AgentSpec<ReviewInput, SkepticOutput> = {
       schema: SkepticOutputSchema,
       mock: () => mockSkeptic(input.candidates),
       forceMock: input.forceMock,
+      host: diagnosticHost(),
       runId: input.runId,
       signal: ctx.signal,
     });

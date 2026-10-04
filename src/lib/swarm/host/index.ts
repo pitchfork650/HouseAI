@@ -3,11 +3,13 @@ import type { ImagePart } from "../../llm";
 import { audit, hash } from "../../audit";
 import { MockSwarmHost } from "./mock";
 import { OpenSwarmHost, agentTimeoutMs, validateHostUrl } from "./openswarm";
+import { GeminiSwarmHost } from "./gemini";
 
 /**
- * Every swarm agent call goes through a SwarmHost. Two versions:
+ * Every swarm agent call goes through a SwarmHost:
  *  - MockSwarmHost replays the sample runs (default until the host is set up)
  *  - OpenSwarmHost runs agents on the OpenSwarm host device over HTTPS / a private tunnel
+ *  - GeminiSwarmHost runs each agent as a Gemini call from this server (SWARM_HOST=gemini)
  * Agent definitions (prompt + expected output format) live in this repo and are sent
  * with every request; every result is validated against that format here.
  */
@@ -33,26 +35,41 @@ export type AgentRequest<T> = {
   forceMock?: boolean;
   signal?: AbortSignal;
   runId?: string;
+  /** Host override (the diagnostic swarm passes diagnosticHost()). */
+  host?: SwarmHost;
 };
 
 export type HostResult = { data: unknown; model: string };
 
-export type HostStatus = { kind: "mock" | "openswarm"; connected: boolean; label: string; detail?: string };
+export type HostKind = "mock" | "openswarm" | "gemini";
+
+export type HostStatus = { kind: HostKind; connected: boolean; label: string; detail?: string };
 
 export interface SwarmHost {
-  kind: "mock" | "openswarm";
+  kind: HostKind;
   invoke(def: AgentDefinition, req: { context: Record<string, unknown>; images?: ImagePart[]; signal?: AbortSignal; runId?: string; mock: () => unknown }): Promise<HostResult>;
   status(): Promise<HostStatus>;
 }
 
 const mockHost = new MockSwarmHost();
 let realHost: OpenSwarmHost | null = null;
+let geminiHost: GeminiSwarmHost | null = null;
 
 /** SWARM_HOST=openswarm plus OPENSWARM_HOST_URL selects the real host; anything else uses the mock. */
 export function swarmHost(): SwarmHost {
   if (process.env.SWARM_HOST !== "openswarm" || !process.env.OPENSWARM_HOST_URL) return mockHost;
   if (!realHost) realHost = new OpenSwarmHost(validateHostUrl(process.env.OPENSWARM_HOST_URL), process.env.OPENSWARM_TOKEN ?? "");
   return realHost;
+}
+
+/**
+ * Host for the diagnostic (X-ray) swarm. DIAGNOSTIC_HOST=gemini plus GEMINI_API_KEY reads
+ * images with Gemini; otherwise the same host as every other swarm. Insurance never uses
+ * Gemini this way: without carrier access a model would only invent coverage answers.
+ */
+export function diagnosticHost(): SwarmHost {
+  if (process.env.DIAGNOSTIC_HOST === "gemini" && process.env.GEMINI_API_KEY) return (geminiHost ??= new GeminiSwarmHost());
+  return swarmHost();
 }
 
 /** Per-agent timeout for the coordinator: the host's own timeout plus headroom. */
@@ -78,9 +95,9 @@ export function definitionFor<T>(req: Pick<AgentRequest<T>, "name" | "slug" | "v
   return { name: req.name, slug: req.slug, version: req.version, prompt: req.prompt, outputSchema: z.toJSONSchema(req.schema) };
 }
 
-export async function invokeAgent<T>(req: AgentRequest<T>): Promise<{ data: T; model: string; host: "mock" | "openswarm" }> {
+export async function invokeAgent<T>(req: AgentRequest<T>): Promise<{ data: T; model: string; host: HostKind }> {
   assertMinimalContext(req.context);
-  const host = req.forceMock ? mockHost : swarmHost();
+  const host = req.forceMock ? mockHost : req.host ?? swarmHost();
   const def = definitionFor(req);
   const payload = { context: req.context, images: (req.images ?? []).map((i) => ({ mimeType: i.mimeType, bytes: i.data.length })) };
   // Every request to the host is logged (hashes only, no content).

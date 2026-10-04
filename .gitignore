@@ -30,3 +30,6 @@ prisma/dev.db-journal
 storage/
 .env*.local
 prisma/test.db*
+
+# Downloaded datasets (DENTEX)
+.cache/

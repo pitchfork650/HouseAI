@@ -11,7 +11,7 @@ describe("diagnostic agents (mocked model responses)", () => {
     const out = await runPhase(store, await registerAgents(store, specs), specs, input);
     expect(out.map((o) => `${o.status}:${o.badge}`)).toEqual(["done:2 found", "flag:Flagged", "done:2 found", "done:1 found", "skip:Skipped"]);
     expect(out[4].result).toBe("No intraoral photo uploaded. Nothing else was affected.");
-    for (const o of out.slice(0, 4)) expect(o.promptVersion).toBe("v1");
+    for (const o of out.slice(0, 4)) expect(o.promptVersion).toBe("v2");
 
     const candidates = collectCandidates(specs.map((s, i) => ({ name: s.name, outcome: out[i] })));
     const review: ReviewInput = { ...input, candidates };

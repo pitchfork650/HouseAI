@@ -7,15 +7,20 @@ import { Icon } from "@/components/icons";
 import { AllergyChip, btnPrimary, btnSecondary, Card, Chip, PatientHeader, PriorityPill } from "@/components/ui";
 import { PRIO, asPriority } from "@/lib/priority";
 import type { RunView } from "@/lib/views";
+import type { OverlayShape } from "@/lib/pano";
+import { FAMILY_TEXT, type Comparison } from "@/lib/ground-truth";
 import { Overlay, SyntheticPano } from "./Pano";
 
 export type StudyView = { id: string; type: string; takenAt: string; synthetic: boolean } | null;
 
 const TYPE_LABEL: Record<string, string> = { pano: "PANORAMIC", bitewing: "BITEWINGS", pa: "PERIAPICAL", cbct: "CBCT", intraoral: "INTRAORAL" };
 
+/** Expert labels for a public-dataset X-ray, in the viewer frame, plus how the latest run scored. */
+export type TruthView = { source: string; overlays: OverlayShape[]; comparison: Comparison | null; model: string | null } | null;
+
 export type HeaderView = { initials: string; name: string; sub: string; allergies: string[]; chips: string[] };
 
-export function DiagnosticsView({ patientId, header, run: initialRun, study }: { patientId: string; header: HeaderView; run: RunView | null; study: StudyView }) {
+export function DiagnosticsView({ patientId, header, run: initialRun, study, truth = null }: { patientId: string; header: HeaderView; run: RunView | null; study: StudyView; truth?: TruthView }) {
   const router = useRouter();
   const [run, setRun] = useState<RunView | null>(initialRun);
   const [busy, setBusy] = useState<string | null>(null);
@@ -102,7 +107,8 @@ export function DiagnosticsView({ patientId, header, run: initialRun, study }: {
 
       <div className="flex flex-wrap items-start gap-5">
         <section className="flex min-w-0 flex-col gap-4" style={{ flex: "999 1 600px" }}>
-          <XrayViewer study={study} findings={findings} />
+          <XrayViewer study={study} findings={findings} truth={truth} />
+          {truth ? <TruthCard truth={truth} running={running} /> : null}
           <ToothChart findings={findings} />
 
           <Card className="overflow-hidden" >
@@ -245,8 +251,9 @@ function UploadButton({ patientId, onDone }: { patientId: string; onDone: (msg: 
   );
 }
 
-function XrayViewer({ study, findings }: { study: StudyView; findings: RunView["findings"] }) {
+function XrayViewer({ study, findings, truth }: { study: StudyView; findings: RunView["findings"]; truth: TruthView }) {
   const [overlay, setOverlay] = useState(true);
+  const [labels, setLabels] = useState(false);
   const [zoom, setZoom] = useState(false);
   const [contrast, setContrast] = useState(false);
   const [measure, setMeasure] = useState(false);
@@ -274,6 +281,15 @@ function XrayViewer({ study, findings }: { study: StudyView; findings: RunView["
           >
             AI overlay {overlay ? "on" : "off"}
           </button>
+          {truth ? (
+            <button
+              aria-pressed={labels}
+              onClick={() => setLabels((l) => !l)}
+              className={`h-10 rounded-[8px] border px-3 text-[13px] font-semibold ${labels ? "border-[#34D399] bg-[#0F2E25] text-[#6EE7B7]" : "border-[#243246] bg-[#0D1520] text-on-navy"}`}
+            >
+              Expert labels {labels ? "on" : "off"}
+            </button>
+          ) : null}
         </div>
       </div>
       <div className="overflow-auto">
@@ -292,6 +308,18 @@ function XrayViewer({ study, findings }: { study: StudyView; findings: RunView["
           ) : (
             <rect width="800" height="400" fill="#05090F" />
           )}
+          {labels && truth
+            ? truth.overlays.map((s, i) =>
+                s.kind === "box" ? (
+                  <g key={i}>
+                    <rect x={s.x} y={s.y} width={s.w} height={s.h} rx="4" fill="none" stroke="#34D399" strokeWidth="1.5" strokeDasharray="5 3" />
+                    <text x={s.lx} y={s.ly} fill="#6EE7B7" fontFamily="var(--font-plex-mono), monospace" fontSize="10">
+                      {s.label}
+                    </text>
+                  </g>
+                ) : null,
+              )
+            : null}
           {overlay ? <Overlay findings={findings} /> : null}
           {measure ? (
             <text x="16" y="388" fill="#7DD3E0" fontFamily="var(--font-plex-mono), monospace" fontSize="11">
@@ -301,6 +329,52 @@ function XrayViewer({ study, findings }: { study: StudyView; findings: RunView["
         </svg>
       </div>
     </div>
+  );
+}
+
+/** Scorecard: the latest swarm run against the dataset's expert labels (tooth + kind of problem). */
+function TruthCard({ truth, running }: { truth: NonNullable<TruthView>; running: boolean }) {
+  const c = truth.comparison;
+  const total = c ? c.matched.length + c.missed.length : truth.overlays.length;
+  const pill = (tone: string) => `inline-flex items-center gap-1 rounded-full px-[10px] py-[3px] text-[12px] font-semibold ${tone}`;
+  return (
+    <Card className="flex flex-col gap-3 px-5 py-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="m-0 text-[16px] font-bold">Checked against expert labels</h2>
+        <span className="text-[12px] text-muted">{truth.source}</span>
+      </div>
+      {running ? (
+        <p className="m-0 text-[14px] text-ink-2">The swarm is reading this X-ray. The score appears when it finishes.</p>
+      ) : !c ? (
+        <p className="m-0 text-[14px] text-ink-2">Not read yet. Run the swarm to compare its findings with the {total} labelled problems on this X-ray.</p>
+      ) : (
+        <>
+          <p className="m-0 text-[14px] text-ink-2">
+            The swarm{truth.model && truth.model !== "mock" ? ` (${truth.model})` : truth.model === "mock" ? " (mock replay, not a real read)" : ""} found <b>{c.matched.length} of {total}</b> labelled problems
+            {c.extra.length ? `, and flagged ${c.extra.length} the labels don't include` : ""}. Matching is by tooth and kind of problem (caries, periapical lesion, impacted tooth).
+          </p>
+          <div className="flex flex-col gap-2 text-[13px]">
+            {[
+              { title: "Found", items: c.matched, tone: "bg-[#E7F7EF] text-[#166534]" },
+              { title: "Missed", items: c.missed, tone: "bg-p1-tint text-p1-text" },
+              { title: "Not in labels", items: c.extra, tone: "bg-chip text-ink-2" },
+            ].map((g) =>
+              g.items.length ? (
+                <div key={g.title} className="flex flex-wrap items-center gap-2">
+                  <span className="w-[104px] flex-none font-semibold text-ink">{g.title}</span>
+                  {g.items.map((x) => (
+                    <span key={`${x.family}${x.tooth}`} className={pill(g.tone)}>
+                      #{x.tooth} {FAMILY_TEXT[x.family].toLowerCase()}
+                    </span>
+                  ))}
+                </div>
+              ) : null,
+            )}
+            {c.unscored.length ? <span className="text-[12px] text-muted">{c.unscored.length} finding(s) in categories DENTEX doesn&apos;t label (e.g. restoration margins) are not scored.</span> : null}
+          </div>
+        </>
+      )}
+    </Card>
   );
 }
 

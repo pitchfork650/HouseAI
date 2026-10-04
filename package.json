@@ -19,7 +19,8 @@
     "insurance:run": "tsx --env-file-if-exists=.env scripts/run-insurance.ts",
     "followup:draft": "tsx --env-file-if-exists=.env scripts/draft-followup.ts",
     "xrays:import": "tsx --env-file-if-exists=.env scripts/import-bitewings.ts",
-    "xrays:eval": "tsx --env-file-if-exists=.env scripts/eval-xrays.ts"
+    "xrays:eval": "tsx --env-file-if-exists=.env scripts/eval-xrays.ts",
+    "commons:import": "tsx --env-file-if-exists=.env scripts/import-commons.ts"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",

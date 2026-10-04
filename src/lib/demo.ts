@@ -2,7 +2,9 @@ import { prisma } from "./db";
 import { DEFAULT_ROUTES } from "./config";
 
 /** Image licences that allow use on the public (commercial) marketing site. */
-const PUBLIC_LICENSES = ["CC BY 4.0", "CC0"];
+// CC BY-SA allows commercial use with attribution (shown in the caption). Substring
+// matches never hit non-commercial ones: "CC BY-NC-SA" doesn't contain "CC BY-SA".
+const PUBLIC_LICENSES = ["CC BY 4.0", "CC BY-SA 3.0", "CC BY-SA 4.0", "CC0", "Public domain"];
 
 /**
  * The scan the demo leads with: the latest finished diagnostic run on a real

@@ -54,7 +54,6 @@ Build order from the [spec](docs/build-spec.md#7-build-order-commit-after-each-w
 
 Also open:
 
-- GDPR export and erasure endpoints (consent per purpose, residency guard and encrypted file storage are in place)
 - `host/server.ts`: the host team still has to wire `run_agent` and `health` to the OpenSwarm desktop app
 - Real integrations (Eaglesoft/Dentrix, insurer portals, an email provider) are out of scope until approved
 

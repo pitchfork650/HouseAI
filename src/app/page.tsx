@@ -56,7 +56,7 @@ export default async function LandingPage() {
   const swarmNames = agents.filter((a) => a.status !== "skip" && a.name !== "Skeptic" && a.name !== "Verifier").slice(0, 5).map((a) => a.name);
 
   const steps: WorkflowStep[] = FLOW_ROWS.flatMap((row) =>
-    row.steps.map((s) => ({ num: s.num.split(" ")[0], title: s.title, icon: s.icon, tag: s.tag, body: s.body, out: s.out.replace(/^Out:\s*/, "→ "), swarm: s.swarm, href: s.href, phase: row.eyebrow.split(" · ")[0] === "BEFORE THE VISIT" ? "Before the visit" : "After diagnosis" })),
+    row.steps.map((s) => ({ num: s.num.split(" ")[0], title: s.title, icon: s.icon, tag: s.tag, body: s.body, swarm: s.swarm, href: s.href })),
   );
   const loop = FLOW_ROWS.find((r) => r.loopsBack)?.loopsBack;
 
@@ -163,7 +163,7 @@ export default async function LandingPage() {
 
       {/* Workflow */}
       <section id="workflow" className="scroll-mt-16 border-t border-lp-line bg-lp-surface">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-16 px-6 py-28 max-[900px]:grid-cols-1 max-[900px]:gap-8 max-[640px]:px-4 max-[640px]:py-16">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-16 px-6 py-24 max-[900px]:grid-cols-1 max-[900px]:gap-8 max-[640px]:px-4 max-[640px]:py-16">
           <div>
             <Reveal className="sticky top-28 flex flex-col gap-4">
               <span className="text-[13px] font-medium text-lp-accent">How it works</span>
@@ -192,80 +192,82 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Security */}
-      <section id="security" className="lp-dark scroll-mt-16 relative overflow-hidden">
+      {/* Security, CTA and footer share one dark band */}
+      <div className="lp-dark relative overflow-hidden">
         <div className="lp-dark-wash pointer-events-none absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-[1200px] px-6 py-28 max-[640px]:px-4 max-[640px]:py-16">
-          <Reveal className="flex max-w-[760px] flex-col gap-4">
-            <span className="text-[13px] font-medium text-[#7DD3E0]">Security and oversight</span>
-            <h2 className="m-0 text-[48px] font-semibold leading-[1.05] tracking-[-0.04em] text-white max-[640px]:text-[34px]">
-              Built for clinical accountability, <span className="text-white/45">not around it.</span>
-            </h2>
-          </Reveal>
-          <div className="mt-16 grid grid-cols-4 gap-10 max-[900px]:grid-cols-2 max-[560px]:grid-cols-1">
-            {security.map((s, i) => (
-              <Reveal key={s.title} delay={i * 90} className="flex flex-col gap-3 border-t border-white/10 pt-6">
-                <Icon name={s.icon} size={20} color="#7DD3E0" />
-                <h3 className="m-0 text-[16px] font-semibold text-white">{s.title}</h3>
-                <p className="m-0 text-[14px] leading-[1.6] text-white/55">{s.body}</p>
-              </Reveal>
-            ))}
-          </div>
-          <Reveal className="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-8 text-[13px] text-white/45">
-            {COMPLIANCE_ITEMS.map((t) => (
-              <span key={t} className="flex items-center gap-2">
-                <Icon name="check" size={14} color="#38BDCF" />
-                {t}
-              </span>
-            ))}
-          </Reveal>
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden">
-        <div className="lp-cta-wash pointer-events-none absolute inset-0" aria-hidden="true" />
-        <Reveal className="relative mx-auto flex max-w-[1200px] flex-col items-center gap-6 px-6 py-32 text-center max-[640px]:px-4 max-[640px]:py-20">
-          <h2 className="m-0 max-w-[760px] text-[56px] font-semibold leading-[1.04] tracking-[-0.045em] text-lp-ink max-[640px]:text-[36px]">Your next clinic day, already handled.</h2>
-          <p className="m-0 max-w-[520px] text-[17px] leading-[1.6] text-lp-muted">Walk through a full clinic day in the demo: the swarm&apos;s read, the booked schedule, insurance in flight and follow-ups ready to send.</p>
-          <div className="mt-2 flex flex-wrap justify-center gap-3">
-            <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
-              Open the live demo
-              <span className="lp-btn-arrow" aria-hidden="true">→</span>
-            </Link>
-            <Link href="/schedule" className="lp-btn lp-btn-ghost h-11 px-5 text-[15px]">
-              View the schedule
-            </Link>
-          </div>
-        </Reveal>
-      </section>
-
-      <footer className="border-t border-lp-line">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-start justify-between gap-10 px-6 py-12 max-[640px]:px-4">
-          <div className="flex max-w-[300px] flex-col gap-3">
-            <span className="flex items-center gap-[10px]">
-              <LogoTile size={24} radius={7} glyph={14} />
-              <span className="text-[14px] font-semibold text-lp-ink">HouseAI</span>
-            </span>
-            <span className="text-[13px] leading-[1.6] text-lp-faint">Clinical AI for dental practices. Decision support only; the dentist confirms every finding.</span>
-          </div>
-          <div className="flex gap-16 text-[13px] max-[480px]:gap-10">
-            <div className="flex flex-col gap-3">
-              <span className="font-medium text-lp-ink">Product</span>
-              {items.filter((i) => i.key !== "flow").map((i) => (
-                <Link key={i.key} href={i.href} className="text-lp-muted no-underline hover:text-lp-ink">
-                  {i.label}
-                </Link>
+        <section id="security" className="relative scroll-mt-16">
+          <div className="mx-auto max-w-[1200px] px-6 py-28 max-[640px]:px-4 max-[640px]:py-16">
+            <Reveal className="flex max-w-[760px] flex-col gap-4">
+              <span className="text-[13px] font-medium text-[#7DD3E0]">Security and oversight</span>
+              <h2 className="m-0 text-[48px] font-semibold leading-[1.05] tracking-[-0.04em] text-white max-[640px]:text-[34px]">
+                Built for clinical accountability, <span className="text-white/45">not around it.</span>
+              </h2>
+            </Reveal>
+            <div className="mt-16 grid grid-cols-4 gap-10 max-[900px]:grid-cols-2 max-[560px]:grid-cols-1">
+              {security.map((s, i) => (
+                <Reveal key={s.title} delay={i * 90} className="flex flex-col gap-3 border-t border-white/10 pt-6">
+                  <Icon name={s.icon} size={20} color="#7DD3E0" />
+                  <h3 className="m-0 text-[16px] font-semibold text-white">{s.title}</h3>
+                  <p className="m-0 text-[14px] leading-[1.6] text-white/55">{s.body}</p>
+                </Reveal>
               ))}
             </div>
-            <div className="flex flex-col gap-3">
-              <span className="font-medium text-lp-ink">Company</span>
-              <a href="#security" className="text-lp-muted no-underline hover:text-lp-ink">Security</a>
-              <a href="#workflow" className="text-lp-muted no-underline hover:text-lp-ink">How it works</a>
-            </div>
+            <Reveal className="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-8 text-[13px] text-white/45">
+              {COMPLIANCE_ITEMS.map((t) => (
+                <span key={t} className="flex items-center gap-2">
+                  <Icon name="check" size={14} color="#38BDCF" />
+                  {t}
+                </span>
+              ))}
+            </Reveal>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        <section className="relative">
+          <div className="lp-cta-glow pointer-events-none absolute inset-0" aria-hidden="true" />
+          <Reveal className="relative mx-auto flex max-w-[1200px] flex-col items-center gap-6 px-6 pb-32 pt-16 text-center max-[640px]:px-4 max-[640px]:pb-20 max-[640px]:pt-8">
+            <h2 className="m-0 max-w-[760px] text-[56px] font-semibold leading-[1.04] tracking-[-0.045em] text-white max-[640px]:text-[36px]">Your next clinic day, already handled.</h2>
+            <p className="m-0 max-w-[520px] text-[17px] leading-[1.6] text-white/55">Walk through a full clinic day in the demo: the swarm&apos;s read, the booked schedule, insurance in flight and follow-ups ready to send.</p>
+            <div className="mt-2 flex flex-wrap justify-center gap-3">
+              <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-light h-11 px-5 text-[15px]">
+                Open the live demo
+                <span className="lp-btn-arrow" aria-hidden="true">→</span>
+              </Link>
+              <Link href="/schedule" className="lp-btn lp-btn-ghost-dark h-11 px-5 text-[15px]">
+                View the schedule
+              </Link>
+            </div>
+          </Reveal>
+        </section>
+
+        <footer className="relative border-t border-white/10">
+          <div className="mx-auto flex max-w-[1200px] flex-wrap items-start justify-between gap-10 px-6 py-12 max-[640px]:px-4">
+            <div className="flex max-w-[300px] flex-col gap-3">
+              <span className="flex items-center gap-[10px]">
+                <LogoTile size={24} radius={7} glyph={14} />
+                <span className="text-[14px] font-semibold text-white">HouseAI</span>
+              </span>
+              <span className="text-[13px] leading-[1.6] text-white/45">Clinical AI for dental practices. Decision support only; the dentist confirms every finding.</span>
+            </div>
+            <dl className="m-0 grid grid-cols-[88px_auto] gap-x-8 gap-y-6 text-[13px]">
+              <dt className="font-medium text-white">Product</dt>
+              <dd className="m-0 grid grid-cols-2 gap-x-10 gap-y-3">
+                {items.filter((i) => i.key !== "flow").map((i) => (
+                  <Link key={i.key} href={i.href} className="text-white/55 no-underline transition-colors hover:text-white">
+                    {i.label}
+                  </Link>
+                ))}
+              </dd>
+              <dt className="font-medium text-white">Company</dt>
+              <dd className="m-0 grid grid-cols-2 gap-x-10 gap-y-3">
+                <a href="#security" className="text-white/55 no-underline transition-colors hover:text-white">Security</a>
+                <a href="#workflow" className="text-white/55 no-underline transition-colors hover:text-white">How it works</a>
+              </dd>
+            </dl>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

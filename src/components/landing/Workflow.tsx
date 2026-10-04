@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Icon, type IconName } from "@/components/icons";
 
-export type WorkflowStep = { num: string; title: string; icon: IconName; tag: string; body: string; out: string; swarm?: boolean; href: string; phase: string };
+export type WorkflowStep = { num: string; title: string; icon: IconName; tag: string; body: string; swarm?: boolean; href: string };
 
 /** Sticky-heading step list: the rail fills and the step nearest the viewport centre lights up as you scroll. */
 export function Workflow({ steps }: { steps: WorkflowStep[] }) {
@@ -49,34 +49,32 @@ export function Workflow({ steps }: { steps: WorkflowStep[] }) {
 
   return (
     <ol ref={listRef} className="relative m-0 list-none p-0">
-      <span className="absolute bottom-6 left-[19px] top-6 w-px bg-lp-line" aria-hidden="true" />
-      <span className="absolute left-[19px] top-6 w-px origin-top bg-lp-accent transition-[height] duration-150 ease-out" style={{ height: `calc((100% - 48px) * ${progress})` }} aria-hidden="true" />
+      <span className="absolute bottom-[30px] left-[15px] top-[30px] w-px bg-lp-line" aria-hidden="true" />
+      <span className="absolute left-[15px] top-[30px] w-px origin-top bg-lp-accent transition-[height] duration-150 ease-out" style={{ height: `calc((100% - 60px) * ${progress})` }} aria-hidden="true" />
       {steps.map((s, i) => {
         const on = i === active;
         const passed = i <= active;
         return (
-          <li key={s.num} data-step className="relative flex gap-6 py-6 pl-0">
+          <li key={s.num} data-step className="relative flex gap-5 py-[14px]">
             <span
-              className={`relative z-10 flex h-10 w-10 flex-none items-center justify-center rounded-full border transition-all duration-500 ${
-                passed ? (s.swarm ? "border-lp-accent bg-lp-accent" : "border-lp-ink bg-lp-ink") : "border-lp-line bg-lp-bg"
+              className={`relative z-10 flex h-8 w-8 flex-none items-center justify-center rounded-full border transition-all duration-500 ${
+                passed ? (s.swarm ? "border-lp-accent bg-lp-accent" : "border-lp-ink bg-lp-ink") : "border-lp-line bg-lp-surface"
               } ${on ? "scale-110" : ""}`}
             >
-              <Icon name={s.icon} size={17} color={passed ? "#FFFFFF" : "#8A94A6"} />
+              <Icon name={s.icon} size={15} color={passed ? "#FFFFFF" : "#8A94A6"} />
             </span>
-            <Link href={s.href} className={`group flex min-w-0 flex-1 flex-col gap-2 pt-[6px] no-underline transition-opacity duration-500 ${on ? "opacity-100" : "opacity-45 hover:opacity-80"}`}>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Link href={s.href} className={`group flex min-w-0 flex-1 flex-col gap-1 pt-[4px] no-underline transition-opacity duration-500 ${on ? "opacity-100" : "opacity-45 hover:opacity-80"}`}>
+              <div className="flex items-center gap-3">
                 <span className="font-mono text-[12px] text-lp-faint">{s.num}</span>
-                <span className="text-[12px] uppercase tracking-[0.08em] text-lp-faint">{s.phase}</span>
-                <span className={`rounded-full px-2 py-[2px] text-[11px] font-medium ${s.swarm ? "bg-lp-accent-tint text-lp-accent" : "bg-lp-chip text-lp-muted"}`}>{s.tag}</span>
+                <h3 className="m-0 flex items-center gap-2 text-[17px] font-semibold tracking-[-0.015em] text-lp-ink">
+                  {s.title}
+                  <span className="text-lp-faint opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" aria-hidden="true">
+                    →
+                  </span>
+                </h3>
+                <span className={`ml-auto whitespace-nowrap rounded-full px-2 py-[2px] text-[11px] font-medium max-[480px]:hidden ${s.swarm ? "bg-lp-accent-tint text-lp-accent" : "bg-lp-chip text-lp-muted"}`}>{s.tag}</span>
               </div>
-              <h3 className="m-0 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.02em] text-lp-ink">
-                {s.title}
-                <span className="text-lp-faint opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" aria-hidden="true">
-                  →
-                </span>
-              </h3>
-              <p className="m-0 max-w-[560px] text-[15px] leading-[1.6] text-lp-muted">{s.body}</p>
-              <span className="text-[13px] text-lp-faint">{s.out}</span>
+              <p className="m-0 max-w-[580px] pl-[30px] text-[14px] leading-[1.55] text-lp-muted max-[480px]:pl-0">{s.body}</p>
             </Link>
           </li>
         );

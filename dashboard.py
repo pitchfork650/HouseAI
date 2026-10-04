@@ -162,7 +162,7 @@ if submitted:
             response = requests.post(
                 f"{API_BASE_URL}/api/diagnose",
                 json={"patient_id": patient_id, "age": int(age), "symptoms": symptoms, "lab_notes": lab_notes},
-                timeout=10,
+                timeout=45,
             )
             response.raise_for_status()
             diagnostic = response.json()
@@ -172,7 +172,7 @@ if submitted:
                 booking_response = requests.post(
                     f"{API_BASE_URL}/api/schedule",
                     json={"urgency_tier": routing["urgency_tier"], "specialty": routing["specialty"]},
-                    timeout=10,
+                    timeout=20,
                 )
                 booking_response.raise_for_status()
                 appointment = booking_response.json()

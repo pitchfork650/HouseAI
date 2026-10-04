@@ -168,11 +168,28 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Security, CTA and footer share one dark band */}
+      {/* CTA, security and footer share one dark band */}
       <div className="lp-dark relative overflow-hidden">
         <div className="lp-dark-wash pointer-events-none absolute inset-0" aria-hidden="true" />
 
-        <section id="security" className="relative scroll-mt-16">
+        <section className="relative">
+          <div className="lp-cta-glow pointer-events-none absolute inset-0" aria-hidden="true" />
+          <Reveal className="relative mx-auto flex max-w-[1200px] flex-col items-center gap-6 px-6 pb-24 pt-28 text-center max-[640px]:px-4 max-[640px]:pb-14 max-[640px]:pt-16">
+            <h2 className="m-0 max-w-[760px] text-[56px] font-semibold leading-[1.04] tracking-[-0.045em] text-white max-[640px]:text-[36px]">Your next clinic day, already handled.</h2>
+            <p className="m-0 max-w-[520px] text-[17px] leading-[1.6] text-white/55">Walk through a full clinic day in the demo: the swarm&apos;s read, the booked schedule, insurance in flight and follow-ups ready to send.</p>
+            <div className="mt-2 flex flex-wrap justify-center gap-3">
+              <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-light h-11 px-5 text-[15px]">
+                Open the live demo
+                <span className="lp-btn-arrow" aria-hidden="true">→</span>
+              </Link>
+              <Link href="/schedule" className="lp-btn lp-btn-ghost-dark h-11 px-5 text-[15px]">
+                View the schedule
+              </Link>
+            </div>
+          </Reveal>
+        </section>
+
+        <section id="security" className="relative scroll-mt-16 border-t border-white/10">
           <div className="mx-auto max-w-[1200px] px-6 py-28 max-[640px]:px-4 max-[640px]:py-16">
             <Reveal className="flex max-w-[760px] flex-col gap-4">
               <span className="text-[13px] font-medium text-[#7DD3E0]">Security and oversight</span>
@@ -198,23 +215,6 @@ export default async function LandingPage() {
               ))}
             </Reveal>
           </div>
-        </section>
-
-        <section className="relative">
-          <div className="lp-cta-glow pointer-events-none absolute inset-0" aria-hidden="true" />
-          <Reveal className="relative mx-auto flex max-w-[1200px] flex-col items-center gap-6 px-6 pb-32 pt-16 text-center max-[640px]:px-4 max-[640px]:pb-20 max-[640px]:pt-8">
-            <h2 className="m-0 max-w-[760px] text-[56px] font-semibold leading-[1.04] tracking-[-0.045em] text-white max-[640px]:text-[36px]">Your next clinic day, already handled.</h2>
-            <p className="m-0 max-w-[520px] text-[17px] leading-[1.6] text-white/55">Walk through a full clinic day in the demo: the swarm&apos;s read, the booked schedule, insurance in flight and follow-ups ready to send.</p>
-            <div className="mt-2 flex flex-wrap justify-center gap-3">
-              <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-light h-11 px-5 text-[15px]">
-                Open the live demo
-                <span className="lp-btn-arrow" aria-hidden="true">→</span>
-              </Link>
-              <Link href="/schedule" className="lp-btn lp-btn-ghost-dark h-11 px-5 text-[15px]">
-                View the schedule
-              </Link>
-            </div>
-          </Reveal>
         </section>
 
         <footer className="relative border-t border-white/10">

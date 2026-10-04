@@ -1,14 +1,17 @@
-# HouseAI Dental
+# HouseAI Dental: Devpost submission
 
-**From X-ray to follow-up, on one record.**
-AI agent swarms read every X-ray, fill the calendar, chase insurance and bring patients back, while the dentist signs off on every clinical finding.
+## Devpost fields
 
-- **Live demo:** [DEMO URL]
+- **Project name:** HouseAI Dental
+- **Tagline:** From X-ray to follow-up, on one record. AI agent swarms run the clinic's legwork; the dentist signs off on every finding.
+- **Team:** Gavin Huang, Justin Thai, Aryn Ni
+- **Try it out:** [DEMO URL] · https://github.com/ryunzz/HouseAI
 - **Video:** [VIDEO URL]
-- **Code:** https://github.com/ryunzz/HouseAI
-- **Team:** [TEAM NAMES]
+- **Built with:** nextjs, react, typescript, tailwindcss, prisma, postgresql, supabase, vercel, google-gemini, model-context-protocol, openswarm, zod, vitest
 
 ---
+
+# About the project
 
 ## Inspiration
 
@@ -38,6 +41,14 @@ HouseAI follows one patient record through seven steps:
 
 The record then **loops back**: at the next recall X-ray, HouseAI compares the new findings with the last ones, tooth by tooth, and flags what's new, what got worse and what's unchanged.
 
+### Safeguards built in
+
+- **The dentist signs off.** The swarm only suggests; every finding stays "suggested" until a dentist accepts it.
+- **Audit log.** Every agent output, every request to the swarm host, and every human accept or reject writes an audit event. Events store hashes, not content.
+- **Data minimization.** Agents get the images plus the minimum context. The host interface refuses any request containing names, dates of birth or contact details. Outside production, real patient data is never sent to a model.
+- **GDPR.** Consent per purpose, an EU data-residency guard on model calls, and endpoints to export a patient's record or erase it (erasure removes their files too, and the audit trail keeps only a hash of the patient ID).
+- **Licence-aware demo.** The public landing page only shows images licensed for commercial use. Clinic uploads never appear there.
+
 ## How we built it
 
 - **App:** Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS 4. The screens follow hand-made design mockups: Flow, Diagnostics, Schedule, Insurance, Recall, Intake and Follow-ups, plus a marketing landing page.
@@ -54,14 +65,6 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
   - Research datasets are non-commercial, so they stay inside the app.
   - The public demo uses a periapical X-ray licensed for commercial use (Wikimedia Commons, CC BY-SA 4.0), credited on the page.
 - **Tests:** 45 Vitest tests. They cover the prioritizer, consensus scoring, the coordinator's timeouts and retries, independent insurance lanes, calendar auto-fill, CSV parsing, follow-up consent, recall comparison, GDPR erasure, and the MCP host round trip against our reference server.
-
-## Compliance and safety, built in
-
-- **The dentist signs off.** The swarm only suggests; every finding stays "suggested" until a dentist accepts it.
-- **Audit log.** Every agent output, every request to the swarm host, and every human accept or reject writes an audit event. Events store hashes, not content.
-- **Data minimization.** Agents get the images plus the minimum context. The host interface refuses any request containing names, dates of birth or contact details. Outside production, real patient data is never sent to a model.
-- **GDPR.** Consent per purpose, an EU data-residency guard on model calls, and endpoints to export a patient's record or erase it (erasure removes their files too, and the audit trail keeps only a hash of the patient ID).
-- **Licence-aware demo.** The public landing page only shows images licensed for commercial use. Clinic uploads never appear there.
 
 ## Challenges we ran into
 
@@ -84,16 +87,12 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
 - Validating every model output against a schema, and saving every run, makes AI features debuggable and auditable.
 - In healthcare, the hard part isn't getting a model to answer. It's provenance, consent, sign-off and knowing what the system *didn't* check.
 
-## What's next
+## What's next for House AI
 
 - **OpenSwarm host:** connect the real OpenSwarm desktop app behind our MCP contract. The client side and a reference server are done.
 - **Practice software:** integrations with Eaglesoft and Dentrix, real insurer portals and an email provider, with the practice's approval.
 - **More imaging:** intraoral photos for the cosmetic Shade agent, and CBCT.
 - **Pilot:** a pilot with our client practice using their own de-identified X-rays, with dentist feedback fed back into prompt versions.
-
-## Built with
-
-Next.js · React · TypeScript · Tailwind CSS · Prisma · PostgreSQL · Supabase · Vercel · Google Gemini (`@google/genai`) · Model Context Protocol (MCP SDK) · OpenSwarm · zod · Vitest
 
 ---
 

@@ -5,6 +5,7 @@
 - **Project name:** HouseAI Dental
 - **Elevator pitch** (max 200 characters): AI agent swarms read dental X-rays, build the schedule, chase insurance and send follow-ups, all on one patient record, while the dentist signs off on every finding.
 - **Team:** Gavin Huang, Justin Thai, Aryn Ni
+- **Track:** HealthLink Hackathon 2026 · Track 1 · AI for Clinical Diagnostics
 - **Try it out:** [DEMO URL] · https://github.com/ryunzz/HouseAI (the clinic app) · https://github.com/ryunzz/edit (post-op video maker)
 - **Video:** [VIDEO URL]
 - **Built with:** nextjs, react, typescript, tailwindcss, prisma, postgresql, supabase, vercel, google-gemini, model-context-protocol, openswarm, zod, vitest, bun, ffmpeg, headless-chromium
@@ -15,24 +16,32 @@
 
 ## Inspiration
 
-We didn't start from a feature list. We started by talking to a practicing cosmetic and restorative dentist, [CLIENT NAME / "a cosmetic dentist in CITY"], and asking where the day actually goes. [HOW MANY] conversations later, the answer was clear: the clinical work is the part they love, and almost everything around it leaks time and money.
+We didn't start from a feature list. We started inside a real cosmetic and general dental practice and interviewed the people who run it: the dentist who owns it, the front desk, and the person who handles insurance. We asked where the day goes, what breaks, and what they'd pay to fix.
 
-> "[CLIENT QUOTE: the problem in their words]"
+**The owner already pays for dental AI, and doesn't fully trust it.** The practice pays **$349 a month for Pearl**, an X-ray AI, and treats its reads as a supplementary check rather than an answer. One model gives one opinion: nothing argues with it, and a box on the image doesn't say why or how sure. That's the gap HouseAI goes after. We don't try to be one better model; we read every X-ray the way a case review works.
 
-A dental practice runs on two separate jobs. One is clinical: reading X-rays, spotting what needs treatment, deciding what comes first. The other is admin: booking the chair, checking insurance, explaining costs and getting patients back for their next visit. The admin side takes hours from the front desk, and it's where patients fall through the cracks: an insurance check that never finished, a recall email that never went out, a crown that never got booked.
+### What we heard, and what we built
 
-### What our client asked for, and what they'd pay for it
+Paraphrased from our discovery interviews at the practice (October 2026). We kept the asks we could build this weekend; the rest are in What's next.
 
-We asked them to rank what they'd want, then asked what each piece would be worth to them. Every module in HouseAI maps to something they asked for:
+| Who | What they told us | What we built |
+|---|---|---|
+| **Dentist, practice owner** | Every patient should get the same care whether or not a given staff member is in that day. Inconsistency comes from human error, not bad intent. | An X-ray second opinion that runs the same way on every scan, with the dentist signing off on every finding; follow-ups and a day-12 reminder that go out on their own |
+| **Front desk** | The practice software can't verify insurance, and confirmation calls are still done by hand. | An insurance swarm with one agent per question, so verification runs without a person on the phone; calendar auto-fill that books around unverified insurance |
+| **Insurance coordinator** | Dual coverage is coordinated by hand, and insurer printouts leave out key details such as annual maximums. | Insurance-card OCR with per-field confidence; dual coverage flagged at intake; eligibility lanes that report annual maximum and amount used; a cost split across both insurers |
 
-| What they asked for | In their words | What they'd pay | What we built |
-|---|---|---|---|
-| [ASK 1, e.g. a second opinion on X-rays] | "[QUOTE]" | [$ / month or per use] | Swarm diagnostics: 7 agents, agreement score, dentist sign-off |
-| [ASK 2, e.g. stop insurance phone tag] | "[QUOTE]" | [$] | Insurance swarm with independent lanes and a cost split |
-| [ASK 3, e.g. a full calendar without the juggling] | "[QUOTE]" | [$] | Calendar auto-fill with the practice's own rules |
-| [ASK 4, e.g. patients coming back after big cases] | "[QUOTE]" | [$] | Follow-up emails with a post-op video for that procedure |
+### What they'd pay for it
 
-> "[CLIENT QUOTE: the line about paying for it]"
+We asked the owner how they'd want to buy it. Their answer: **a core package with modular add-ons, billed monthly per location**, the way they already buy Pearl. Our proposed pricing, anchored to what the practice and its peers already pay (Pearl from $299, Weave Pro $249, Adit $159 per location):
+
+| Package | Proposed price | What's in it today |
+|---|---|---|
+| **Core: Patient Autopilot** | $299 / month | Post-op follow-up emails with a procedure video, day-12 reminders, the patient record |
+| **+ Diagnostics** | $149 / month | The multi-agent X-ray second opinion |
+| **+ Insurance** | $199 / month | Card OCR, eligibility and coverage lanes, dual coverage, pre-approvals |
+| **+ Content Studio** | $399 / month | edit, for the practice's own procedure and post-op videos |
+
+All four: $899 a month, against $1,046 bought separately. These are draft prices for the practice to react to, not signed contracts.
 
 The goal: once an X-ray is taken, everything after it happens without staff re-typing anything, and the dentist stays in charge of every clinical decision. Inside the app, HouseAI is personalized for our client's practice; the public site stays generic so any clinic can try it.
 
@@ -98,7 +107,7 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
 
 ## Accomplishments that we're proud of
 
-- Every module traces back to something a real dentist asked for and put a price on. We built what our client said they'd pay for, not what we guessed they'd want.
+- Every module traces back to something the practice's own staff told us is broken, and the pricing follows the shape the owner asked for. We built what our client said they needed, not what we guessed they'd want.
 - The full patient journey works end to end: X-ray, findings, treatment plan, booked schedule, verified insurance, follow-up email and recall.
 - It runs with **zero credentials** in mock mode and switches to live models or a remote OpenSwarm host with a config change.
 - A Skeptic agent and agreement scoring mean the dentist sees *how sure* the swarm is, not just what it thinks.
@@ -106,16 +115,17 @@ The record then **loops back**: at the next recall X-ray, HouseAI compares the n
 
 ## What we learned
 
-- Talking to the client first changed what we built. [WHAT CHANGED, e.g. a feature we dropped or one we added after hearing them out.]
+- Talking to the client first changed what we built. We'd assumed the pitch was "better X-ray AI". The owner already pays for one and treats it as a maybe, so we built a swarm that shows its reasoning, with a Skeptic and a Verifier, instead of chasing a slightly better single model.
 - Agent swarms earn their keep when the work naturally splits into independent jobs, like separate insurers or separate specialists, and when one part failing shouldn't stop the rest. Where a rule does the job, a rule is better.
 - Validating every model output against a schema, and saving every run, makes AI features debuggable and auditable.
 - In healthcare, the hard part isn't getting a model to answer. It's provenance, consent, sign-off and knowing what the system *didn't* check.
 
 ## What's next for House AI
 
-- **Pilot with our client:** run HouseAI on their real schedule and their own de-identified X-rays at the price point they gave us, with their feedback going into new prompt versions.
+- **Pilot with our client:** run HouseAI on their real schedule and their own de-identified X-rays, at the modular pricing the owner asked for, with their feedback going into new prompt versions.
+- **The asks we haven't built yet:** automated appointment-confirmation calls, payment links, and an extension for their practice software (EagleSoft) so verification happens where the front desk already works.
 - **OpenSwarm host:** connect the real OpenSwarm desktop app behind our MCP contract. The client side and a reference server are done.
-- **Practice software:** integrations with Eaglesoft and Dentrix, real insurer portals and an email provider, with the practice's approval.
+- **Real integrations:** insurer portals, Dentrix as well as EagleSoft, and an email provider, with the practice's approval.
 - **More imaging:** intraoral photos for the cosmetic Shade agent, and CBCT.
 - **More post-op videos:** one for every procedure in the practice's fee schedule, made with edit in the clinic's branding.
 

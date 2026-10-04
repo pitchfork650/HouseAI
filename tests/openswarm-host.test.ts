@@ -8,7 +8,7 @@ const PORT = 8799;
 let proc: ChildProcess;
 
 beforeAll(async () => {
-  proc = spawn("npx", ["tsx", "host/server.ts"], { env: { ...process.env, PORT: String(PORT), OPENSWARM_TOKEN: "t0ken", HOST_MODE: "replay" }, stdio: "pipe" });
+  proc = spawn(process.execPath, ["--import", "tsx", "host/server.ts"], { env: { ...process.env, PORT: String(PORT), OPENSWARM_TOKEN: "t0ken", HOST_MODE: "replay" }, stdio: "pipe" });
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("host did not start")), 20_000);
     proc.stdout!.on("data", (d) => {

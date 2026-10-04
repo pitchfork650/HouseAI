@@ -14,7 +14,9 @@
     "setup": "prisma generate && prisma db push --skip-generate && tsx prisma/seed.ts",
     "postinstall": "prisma generate",
     "host:dev": "tsx host/server.ts",
-    "host:probe": "tsx --env-file-if-exists=.env scripts/host-probe.ts"
+    "host:probe": "tsx --env-file-if-exists=.env scripts/host-probe.ts",
+    "runs:inspect": "tsx --env-file-if-exists=.env scripts/inspect-runs.ts",
+    "insurance:run": "tsx --env-file-if-exists=.env scripts/run-insurance.ts"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",
@@ -43,5 +45,8 @@
     "esbuild@0.28.2": true,
     "prisma@6.19.3": true,
     "protobufjs@7.6.6": true
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.2"
   }
 }

@@ -1,23 +1,19 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { DEFAULT_ROUTES } from "@/lib/config";
-import { demoDiagnosticRun, publicStudy } from "@/lib/demo";
-import { AGENT_ORDER } from "@/lib/swarm/diagnostic/agents";
 import { dayEyebrow } from "@/lib/clock";
 import { navItems } from "@/lib/nav";
 import { DEFAULT_DAY } from "@/lib/schedule";
-import type { OverlayShape } from "@/lib/pano";
 import { FLOW_ROWS, COMPLIANCE_ITEMS } from "@/content/flow";
 import { Icon, LogoTile, type IconName } from "@/components/icons";
 import { LandingNav } from "@/components/landing/LandingNav";
-import { HeroDemo, type DemoFinding } from "@/components/landing/HeroDemo";
+import { HeroDemo } from "@/components/landing/HeroDemo";
+import { HERO_AGENTS, HERO_FINDINGS, HERO_XRAY } from "@/content/hero-xray";
 import { Workflow, type WorkflowStep } from "@/components/landing/Workflow";
 import { Reveal, ScrollTilt, Words } from "@/components/landing/Motion";
 import { CalendarVisual, FollowupVisual, InsuranceVisual, IntakeVisual, SwarmVisual } from "@/components/landing/Visuals";
 
 export const dynamic = "force-dynamic";
-
-const PRIORITY_ORDER = ["P1", "P2", "P3", "P4"];
 
 function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: { eyebrow: string; title: string; body: string; children: React.ReactNode; className?: string; delay?: number }) {
   return (
@@ -33,32 +29,9 @@ function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: 
 }
 
 export default async function LandingPage() {
-  const [items, demo, study] = await Promise.all([navItems(), demoDiagnosticRun({ publicSite: true }), publicStudy()]);
-  // A real, licensed X-ray the swarm hasn't read yet beats the generated sample image.
-  const pending = !demo.real && !!study;
-  // While pending, nothing from the sample run (agents, findings, patient) is shown.
-  const run = pending ? null : demo.run;
-  const heroPatient = pending ? study!.patientId : run?.patientId;
-  const heroStudy = pending ? study : run?.study;
-  const STUDY_LABELS: Record<string, string> = { pano: "Panoramic X-ray", bitewing: "Bitewing X-ray", pa: "Periapical X-ray", cbct: "CBCT slice" };
-  const studyLabel = heroStudy ? STUDY_LABELS[heroStudy.type] ?? "X-ray" : "Panoramic X-ray";
-  // Attribution without the licence URL (the licence name is enough on the page).
-  const credit = heroStudy?.source?.replace(/\s*\(https?:[^)]*\)/, "");
-  const demoHref = heroPatient ? `/diagnostics/${heroPatient}` : DEFAULT_ROUTES.diagnostics;
-  const imageSrc = demo.real && run?.studyId ? `/api/studies/${run.studyId}/file` : pending ? `/api/studies/${study!.id}/file` : undefined;
-  const agents = pending
-    ? AGENT_ORDER.map((name) => ({ name, badge: "Queued", status: "queued" }))
-    : (run?.agents ?? []).map((a) => ({ name: a.name, badge: a.badge, status: a.status }));
-  const findings: DemoFinding[] = (run?.findings ?? [])
-    .map((f) => ({
-      teeth: f.teeth as number[],
-      priority: f.priority,
-      title: f.text.split(",")[0],
-      suggested: f.suggested,
-      agreement: f.agreement,
-      overlay: f.overlay as OverlayShape[],
-    }))
-    .sort((a, b) => PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority));
+  const items = await navItems();
+  const demoHref = `/diagnostics/${HERO_XRAY.patientId}`;
+  const agents = HERO_AGENTS;
   const swarmNames = agents.filter((a) => a.status !== "skip" && a.name !== "Skeptic" && a.name !== "Verifier").slice(0, 5).map((a) => a.name);
 
   const steps: WorkflowStep[] = FLOW_ROWS.flatMap((row) =>
@@ -107,24 +80,10 @@ export default async function LandingPage() {
 
         <div className="lp-rise relative mx-auto mt-16 max-w-[1200px] px-6 max-[640px]:mt-10 max-[640px]:px-3" style={{ animationDelay: "850ms" }}>
           <ScrollTilt>
-            {heroPatient ? (
-              <HeroDemo
-                patientId={heroPatient}
-                pending={pending}
-                studyLabel={studyLabel}
-                dayLabel={pending || !run ? "NOT READ YET" : demo.real && run.study ? `READ ${run.startedAt.toISOString().slice(0, 10)} · ${Math.round(((run.finishedAt ?? run.startedAt).getTime() - run.startedAt.getTime()) / 1000)} S` : dayEyebrow(DEFAULT_DAY)}
-                agents={agents}
-                findings={findings}
-                imageSrc={imageSrc}
-              />
-            ) : null}
+            <HeroDemo patientId={HERO_XRAY.patientId} studyLabel={HERO_XRAY.studyLabel} dayLabel={dayEyebrow(DEFAULT_DAY)} agents={HERO_AGENTS} findings={HERO_FINDINGS} imageSrc={HERO_XRAY.src} />
           </ScrollTilt>
           <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">
-            {pending
-              ? `A real, de-identified X-ray (${credit}). The agent swarm hasn't read it yet; its findings appear here once it has.`
-              : imageSrc
-              ? `A real, de-identified X-ray${credit ? ` (${credit})` : ""}, read by the agent swarm${run?.agents.find((a) => a.model)?.model ? ` on ${run.agents.find((a) => a.model)!.model}` : ""}. Decision support only.`
-              : "Synthetic demo patient. Decision support only."}
+            A real, de-identified X-ray ({HERO_XRAY.credit}). Decision support only.
           </p>
         </div>
       </header>

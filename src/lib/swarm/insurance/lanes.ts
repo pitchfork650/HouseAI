@@ -1,4 +1,5 @@
-import { callText } from "../../llm";
+import { z } from "zod";
+import { invokeAgent } from "../host";
 import { loadPrompt } from "../../prompts";
 import { hhmm } from "../../clock";
 import type { AgentOutcome, AgentSpec } from "../coordinator";
@@ -102,15 +103,17 @@ export function preapprovalLane(
       const clock = input.clock.fork();
       const prompt = loadPrompt("preapproval-narrative");
       await clock.sleep(480_000);
-      const res = await callText({
-        agent: "Pre-approval Agent",
-        promptVersion: prompt.version,
-        system: prompt.text,
-        prompt: JSON.stringify({ procedure: procedure.code, teeth: procedure.teeth, findings, attachments: studyTypes }),
-        mock: () =>
+      const res = await invokeAgent({
+        name: "Pre-approval Agent",
+        slug: "preapproval-narrative",
+        version: prompt.version,
+        prompt: prompt.text,
+        schema: z.object({ narrative: z.string().min(1) }),
+        context: { procedure: procedure.code, teeth: procedure.teeth, findings, attachments: studyTypes },
+        mock: () => ({ narrative:
           `Request for pre-authorization of ${procedure.code} (${procedure.title.toLowerCase()}) at ${toothLabel}. ` +
           (findings.length ? `Findings: ${findings.join("; ")}. ` : "") +
-          `Attached: ${studyTypes.join(", ")}.`,
+          `Attached: ${studyTypes.join(", ")}.` }),
         forceMock: input.forceMock,
         signal: ctx.signal,
       });
@@ -118,13 +121,13 @@ export function preapprovalLane(
       await clock.sleep(60_000);
       const att = attachmentLabel(studyTypes);
       ctx.log(`Attached ${att}`, clock.now());
-      const { ref } = await adapter.submitPreapproval(clock, { narrative: res.data, attachments: studyTypes });
+      const { ref } = await adapter.submitPreapproval(clock, { narrative: res.data.narrative, attachments: studyTypes });
       ctx.log(`Submitted · ref ${ref}`, clock.now());
       return {
         status: "submitted",
         badge: "Submitted",
         result: `Submitted · ref ${ref}`,
-        output: { ref, narrative: res.data, attachments: studyTypes, procedure: procedure.code },
+        output: { ref, narrative: res.data.narrative, attachments: studyTypes, procedure: procedure.code },
         model: res.model,
         promptVersion: prompt.version,
       } satisfies AgentOutcome<PreapprovalOutput>;

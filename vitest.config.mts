@@ -3,5 +3,5 @@ import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
-  test: { include: ["tests/**/*.test.ts"], environment: "node", env: { GEMINI_API_KEY: "" } },
+  test: { include: ["tests/**/*.test.ts"], environment: "node", globalSetup: ["tests/global-setup.ts"], env: { GEMINI_API_KEY: "", DATABASE_URL: "file:./test.db", SWARM_HOST: "mock" } },
 });

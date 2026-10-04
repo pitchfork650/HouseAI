@@ -1,4 +1,5 @@
-import { callJSON, type ImagePart } from "../../llm";
+import type { ImagePart } from "../../llm";
+import { invokeAgent } from "../host";
 import { loadPrompt } from "../../prompts";
 import type { AgentOutcome, AgentSpec } from "../coordinator";
 import { RULES, type Condition } from "../../rules/prioritize";
@@ -65,11 +66,12 @@ export function specialistSpec(def: SpecialistDef): AgentSpec<DiagnosticInput, S
       const prompt = loadPrompt(def.slug);
       const studies = imagesFor(input, def.needs);
       ctx.log(`Reading ${studies.map((s) => s.type).join(" + ")}`);
-      const res = await callJSON({
-        agent: def.name,
-        promptVersion: prompt.version,
-        system: prompt.text,
-        prompt: JSON.stringify({ task: "Report findings as JSON.", ageYears: input.context.ageYears, imageFrame: { width: 800, height: 400 }, studies: studies.map((s) => s.type) }),
+      const res = await invokeAgent({
+        name: def.name,
+        slug: def.slug,
+        version: prompt.version,
+        prompt: prompt.text,
+        context: { ageYears: input.context.ageYears, imageFrame: { width: 800, height: 400 }, studies: studies.map((s) => s.type) },
         images: studies.flatMap((s) => (s.image ? [s.image] : [])),
         schema: SpecialistOutputSchema,
         mock: MOCK_SPECIALISTS[def.name],
@@ -91,11 +93,12 @@ export const verifierSpec: AgentSpec<ReviewInput, VerifierOutput> = {
   async run(input, ctx) {
     const prompt = loadPrompt("verifier");
     ctx.log(`Re-reading ${input.candidates.length} finding(s)`);
-    const res = await callJSON({
-      agent: "Verifier",
-      promptVersion: prompt.version,
-      system: prompt.text,
-      prompt: JSON.stringify({ candidates: input.candidates.map(({ id, teeth, condition, detail }) => ({ id, teeth, condition, detail })) }),
+    const res = await invokeAgent({
+      name: "Verifier",
+      slug: "verifier",
+      version: prompt.version,
+      prompt: prompt.text,
+      context: { candidates: input.candidates.map(({ id, teeth, condition, detail }) => ({ id, teeth, condition, detail })) },
       images: input.studies.flatMap((s) => (s.image ? [s.image] : [])),
       schema: VerifierOutputSchema,
       mock: () => mockVerifier(input.candidates),
@@ -116,11 +119,12 @@ export const skepticSpec: AgentSpec<ReviewInput, SkepticOutput> = {
   async run(input, ctx) {
     const prompt = loadPrompt("skeptic");
     ctx.log(`Challenging ${input.candidates.length} finding(s)`);
-    const res = await callJSON({
-      agent: "Skeptic",
-      promptVersion: prompt.version,
-      system: prompt.text,
-      prompt: JSON.stringify({ candidates: input.candidates.map(({ id, teeth, condition, detail, confidence }) => ({ id, teeth, condition, detail, confidence })) }),
+    const res = await invokeAgent({
+      name: "Skeptic",
+      slug: "skeptic",
+      version: prompt.version,
+      prompt: prompt.text,
+      context: { candidates: input.candidates.map(({ id, teeth, condition, detail, confidence }) => ({ id, teeth, condition, detail, confidence })) },
       images: input.studies.flatMap((s) => (s.image ? [s.image] : [])),
       schema: SkepticOutputSchema,
       mock: () => mockSkeptic(input.candidates),

@@ -1,7 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db";
 import { audit } from "../../audit";
-import { assertMayUseModel, callJSON } from "../../llm";
+import { assertMayUseModel } from "../../llm";
+import { invokeAgent } from "../host";
 import { loadPrompt } from "../../prompts";
 import { readFile } from "../../storage";
 import { registerAgents, runPhase, type AgentSpec } from "../coordinator";
@@ -88,11 +89,13 @@ async function execute(
   // Merge: agreement + prioritizer rules, then the consensus call explains each finding.
   const rows = mergeFindings(candidates, verifier, skeptic);
   const prompt = loadPrompt("consensus");
-  const consensus = await callJSON({
-    agent: "Consensus",
-    promptVersion: prompt.version,
-    system: prompt.text,
-    prompt: JSON.stringify({ rows: rows.map((r) => ({ key: r.key, condition: r.condition, teeth: r.teeth, agreement: r.agreement, challenged: r.challenged, nearNerveCanal: r.nearNerveCanal })) }),
+  const consensus = await invokeAgent({
+    name: "Consensus",
+    slug: "consensus",
+    version: prompt.version,
+    prompt: prompt.text,
+    runId,
+    context: { rows: rows.map((r) => ({ key: r.key, condition: r.condition, teeth: r.teeth, agreement: r.agreement, challenged: r.challenged, nearNerveCanal: r.nearNerveCanal })) },
     schema: ConsensusOutputSchema,
     mock: () => mockConsensus(rows),
     forceMock: input.forceMock,

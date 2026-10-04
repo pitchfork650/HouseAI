@@ -7,7 +7,9 @@ import { PRACTICE } from "@/lib/config";
 
 export type NavItem = { key: string; label: string; href: string; icon: IconName; count?: number; countTone?: "teal" | "orange"; match: string };
 
-export function Sidebar({ items }: { items: NavItem[] }) {
+export type HostChip = { connected: boolean; label: string; detail?: string };
+
+export function Sidebar({ items, host }: { items: NavItem[]; host: HostChip }) {
   const pathname = usePathname() ?? "/";
   return (
     <aside
@@ -48,7 +50,14 @@ export function Sidebar({ items }: { items: NavItem[] }) {
           );
         })}
       </nav>
-      <div className="mt-auto flex flex-col gap-[6px] rounded-[12px] bg-navy-2 p-[14px] text-[12px] leading-[1.45]">
+      <div
+        className="mt-auto mb-[6px] flex items-center gap-2 self-start whitespace-nowrap rounded-full bg-navy-2 px-3 py-[6px] text-[12px] font-semibold text-white"
+        title={host.detail} data-host-chip aria-label={`Swarm host: ${host.label}${host.detail ? ` (${host.detail})` : ""}`}
+      >
+        <span className="h-2 w-2 flex-none rounded-full" style={{ background: host.connected ? "#34D399" : "#FBBF24" }} />
+        {host.label}
+      </div>
+      <div className="flex flex-col gap-[6px] rounded-[12px] bg-navy-2 p-[14px] text-[12px] leading-[1.45]">
         <div className="flex items-center gap-2 text-[13px] font-bold text-white">
           <Icon name="shield" size={16} color="#7DD3E0" strokeWidth={2} />
           GDPR compliant

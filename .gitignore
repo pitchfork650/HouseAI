@@ -29,3 +29,4 @@ prisma/dev.db
 prisma/dev.db-journal
 storage/
 .env*.local
+prisma/test.db*

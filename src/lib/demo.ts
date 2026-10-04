@@ -33,3 +33,11 @@ export async function diagnosticsHref(): Promise<string> {
   const { run } = await demoDiagnosticRun();
   return run ? `/diagnostics/${run.patientId}` : DEFAULT_ROUTES.diagnostics;
 }
+
+/** The newest real X-ray the public site may show, whether or not the swarm has read it yet. */
+export async function publicStudy() {
+  return prisma.imagingStudy.findFirst({
+    where: { fileUrl: { startsWith: "storage:" }, OR: PUBLIC_LICENSES.map((l) => ({ source: { contains: l } })) },
+    orderBy: { takenAt: "desc" },
+  });
+}

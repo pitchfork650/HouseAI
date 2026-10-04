@@ -1,7 +1,6 @@
-# HouseAI: Cosmetic & Restorative Dental Intelligence Platform
+# HouseAI Dental
 
-HouseAI is an intelligent multi-agent platform designed specifically for cosmetic and restorative dentists. It combines an autonomous 5-agent dental clinical swarm, multimodal X-ray and photo evaluation via Google Gemini Pro, raw text wall and insurance parsing, and an urgency-colored dental calendar.
-
+A web app for cosmetic and restorative dental clinics that takes a patient from X-ray to follow-up in one record. AI agents ("swarms") do the legwork: second-opinion X-ray reads, insurance checks, scheduling and follow-up emails. The dentist approves every clinical finding.
 
 ## HouseAI Dental web app (Next.js)
 
@@ -11,117 +10,54 @@ The clinic web app (Flow, Diagnostics, Schedule, Insurance, Follow-ups) lives at
 npm install
 npm run setup     # create the SQLite DB and seed the sample clinic
 npm run dev       # http://localhost:3000 (binds 0.0.0.0 for Codespaces)
-npm test
+npm test          # Vitest
+npm run lint      # tsc --noEmit
 ```
 
 It runs end to end with zero credentials: with no `GEMINI_API_KEY` and `SWARM_HOST=mock`, every model and swarm call replays the sample data. See `.env.example`.
 
-**Swarms run on OpenSwarm on a separate host device** (the Windows host laptop), reached through an MCP server over HTTPS or a private tunnel. Agent prompts and output formats stay in `agents/` and are sent with every run. The contract is in [`docs/openswarm-mcp-contract.md`](docs/openswarm-mcp-contract.md), and a reference host server is in `host/server.ts` (`npm run host:dev`). The sidebar chip shows the host status: green when connected, amber when offline or on the mock.
+Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Prisma 6 (SQLite in dev, schema kept Postgres-compatible), Gemini via `@google/genai`, zod 4, Vitest.
 
----
+### OpenSwarm host
 
-## Architecture: The 5-Agent Dental Swarm
+**Swarms run on OpenSwarm on a separate host device** (the Windows host laptop), reached through an MCP server over HTTPS or a private tunnel. Agent prompts and output formats stay in `agents/` and are sent with every run. The contract is in [`docs/openswarm-mcp-contract.md`](docs/openswarm-mcp-contract.md), and a reference host server is in `host/server.ts` (`npm run host:dev`; check a host with `npm run host:probe`). The sidebar chip shows the host status: green when connected, amber when offline or on the mock.
 
-HouseAI runs an orchestrated agent swarm where each agent focuses on a distinct dental discipline:
+### Layout
 
-1. **Dental Triage Nurse Agent**: Evaluates patient concerns, differentiates between elective aesthetic wishes (veneers, whitening, bonding) versus acute dental pathology/infection, and assigns the initial clinical urgency score (1 to 5) and hex color.
-2. **Cosmetic Dentist Specialist Agent**: Evaluates smile design aesthetics, tooth proportions, shade selection (VITA Bleach Shades BL1 to BL4), minimally invasive prep thickness (0.3mm to 0.5mm), e.max lithium disilicate vs feldspathic porcelain, and clear aligner sequencing.
-3. **Radiographic & Visual Analyst Agent**: Evaluates dental X-rays (periapical, bitewing, panorex, CBCT) and intraoral smile photographs using Google Gemini Pro Vision to assess biological width, alveolar bone levels, and enamel bonding substrate.
-4. **Insurance & Billing Agent**: Parses unstructured text walls and insurance documents to extract carriers, CDT billing codes (e.g. D2962, D9972, D8090, D2740), cosmetic exclusion clauses, and patient financing options.
-5. **Safety Critic Agent**: Acts as the senior clinical peer-reviewer, checking for contraindications (active periodontal pocketing, severe nocturnal bruxism requiring nightguards) and finalizing the consensus urgency score and color badge.
+| Path | What |
+|---|---|
+| `src/app/` | Pages (`/`, `/diagnostics/[patientId]`, `/schedule`, `/insurance/[patientId]`, `/follow-ups/[id]`) and API routes |
+| `src/lib/swarm/` | Coordinator (parallel agents, timeouts, retries, saved runs), diagnostic and insurance swarms, host connectors |
+| `src/lib/rules/` | Pure rules: prioritizer, schedule rules, calendar auto-fill |
+| `src/lib/llm/` | The single model gateway (Gemini or mock), data-residency guard |
+| `agents/` | Versioned agent prompts (`*.v1.md`) |
+| `prisma/` | Schema and seed for the sample clinic |
+| `host/` | Reference OpenSwarm MCP host server |
+| `scripts/` | Dev helpers: `npm run host:probe`, `npm run runs:inspect`, `npm run insurance:run [patientId]` |
+| `design/` | Original `.dc.html` mockups; they win any conflict with the spec |
+| `docs/` | [Build spec](docs/build-spec.md), OpenSwarm contract |
+| `legacy/python-api/` | The earlier FastAPI + Streamlit prototype, kept for reference (not used by the app) |
 
----
+## Status
 
-## Clinical Urgency Scoring & Calendar Hex Colors
+Build order from the [spec](docs/build-spec.md#7-build-order-commit-after-each-with-tests):
 
-Every case and calendar appointment is classified with an urgency score and corresponding color for high-visibility visual scheduling:
+- [x] 1. Scaffold, design tokens, fonts, sidebar shell, Flow page
+- [x] 2. Prisma schema and seed
+- [x] 3. Diagnostics screen, swarm coordinator and the 7 diagnostic agents (mock and Gemini)
+- [x] 4. Prioritizer rules, Accept into treatment plan
+- [x] 5. Schedule screen, auto-fill, CSV import
+- [x] 6. Insurance screen and insurance swarm with independent lanes
+- [x] 7. Follow-up screen, email generation, scheduler, day-12 reminder
+- [ ] 8. Intake (form, CSV, drop zone) and card OCR with per-field confidence
+- [ ] 9. Recall comparison against earlier studies
 
-| Score | Tier | Hex Color | Clinical Description | Example Procedures |
-|---|---|---|---|---|
-| **1** | **Elective** | `#10b981` (Green) | Purely elective cosmetic enhancement | In-office Zoom whitening, cosmetic consultation, aesthetic mock-up |
-| **2** | **Cosmetic-Priority** | `#3b82f6` (Blue) | Scheduled aesthetic restorative or aligner refinement | Porcelain veneers prep/seat, Invisalign attachment delivery, cosmetic crown |
-| **3** | **Moderate** | `#f59e0b` (Yellow) | Routine general restorative or hygiene | Composite filling replacement, prophy, localized gingivitis review |
-| **4** | **Urgent** | `#f97316` (Orange) | Urgent aesthetic disruption or localized pain | Fractured front central incisor, broken veneer before an event, dislodged crown |
-| **5** | **Emergency** | `#ef4444` (Red) | High-acuity dental infection or acute trauma | Periapical abscess, severe throbbing pain, facial swelling, avulsed tooth |
+Also open:
 
----
+- GDPR export and erasure endpoints (consent per purpose, residency guard and encrypted file storage are in place)
+- `host/server.ts`: the host team still has to wire `run_agent` and `health` to the OpenSwarm desktop app
+- Real integrations (Eaglesoft/Dentrix, insurer portals, an email provider) are out of scope until approved
 
-## API Endpoints for Frontend Integration
+## Safety and limitations
 
-### 1. Multi-Agent Dental Diagnosis
-- `POST /api/diagnose`
-  - Input JSON: `DentalIntakeInput` (`patient_id`, `patient_name`, `age`, `concerns`, `raw_text_wall`, `insurance_notes`, `image_data`, `image_type`)
-  - Output: Complete report with:
-    - `urgency_score` (1-5) and `urgency_color` (hex color)
-    - `estimated_price_usd` and `estimated_price_display` (e.g. `$8,400.00`)
-    - `estimated_duration_minutes` (e.g. `150`)
-    - `treatment_plan` and `provisional_diagnosis`
-    - `cosmetic_breakdown` (aesthetic goals, shade recommendation, chair time, fees)
-    - `insurance_breakdown` (CDT codes, patient out-of-pocket responsibility, coverage status)
-    - `calendar_recommendation` (pre-computed slot recommendation with duration, fee, and operatory)
-    - `reasoning_log` (transcripts from all 5 agents)
-
-### 2. File Upload & Text Wall Ingestion
-- `POST /api/intake/upload`
-  - Accepts multipart file upload:
-    - Text files (`.txt`, `.md`, `.csv`) parsed as clinical notes and insurance text.
-    - Image files (`.png`, `.jpg`, `.jpeg`, `.webp`) converted to base64 for Gemini Vision X-ray or smile photograph analysis.
-- `POST /api/intake/parse-text-wall`
-  - JSON endpoint for pasting unstructured consultation emails, insurance summaries, or notes.
-
-### 3. Cosmetic Dentist Calendar API
-- `GET /api/calendar/events`
-  - Retrieve all appointments. Supports query filtering: `?category=Cosmetic` or `?min_urgency=3`.
-  - Each event includes `id`, `patient_name`, `procedure`, `category`, `start_time`, `end_time`, `duration_minutes`, `estimated_price_usd`, `operatory`, `urgency_score`, `urgency_level`, `urgency_color`, and `status`.
-- `POST /api/calendar/events`
-  - Book a new dental procedure with automated duration, procedure pricing, operatory assignment, urgency score, and color badge.
-- `GET /api/calendar/events/{event_id}`
-  - Fetch appointment details.
-- `PATCH /api/calendar/events/{event_id}`
-  - Reschedule appointment time or update status (`confirmed`, `in_progress`, `completed`, `cancelled`).
-- `DELETE /api/calendar/events/{event_id}`
-  - Remove/cancel an appointment.
-
-### 4. Specialists & Health Checks
-- `GET /api/doctors`
-  - Dental specialist directory, operatory suites, and upcoming available slots.
-- `GET /health`
-  - Status indicator returning active agents.
-
----
-
-## Local Setup & Execution
-
-### 1. Install Dependencies
-```powershell
-python -m pip install -r requirements.txt
-```
-
-### 2. Configure Google Gemini Pro (Optional)
-To enable live cloud LLM reasoning and multimodal vision:
-1. Copy `.env.example` to `.env`.
-2. Add your Gemini API key:
-   ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
-   GEMINI_MODEL=gemini-1.5-pro
-   ```
-*(If no API key is provided, HouseAI automatically falls back to its deterministic dental clinical decision tree, ensuring zero downtime during presentations.)*
-
-### 3. Start the Backend API
-```powershell
-python -m uvicorn app:app --reload --port 8000
-```
-- Interactive Swagger documentation and API playground: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
-
-### 4. Run Verification Suite
-```powershell
-python test_house_ai.py
-python House_AI.py
-```
-
----
-
-## Safety and Limitations
-
-All analysis and appointment records are synthetic demonstrations created for hackathon review. HouseAI is not a certified medical device and does not provide clinical diagnoses. Licensed dental practitioner evaluation and clinical judgment are required for all patient care decisions.
+All patient records are synthetic. HouseAI is not a certified medical device and does not provide clinical diagnoses. A licensed dentist's evaluation and judgment are required for all patient care decisions.

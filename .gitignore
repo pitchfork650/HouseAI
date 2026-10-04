@@ -19,3 +19,13 @@ env/
 
 # Logs & temp
 *.log
+
+# Node / Next.js
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+prisma/dev.db
+prisma/dev.db-journal
+storage/
+.env*.local

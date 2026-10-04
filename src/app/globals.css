@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0B1F3A;
+  --color-navy-2: #13335E;
+  --color-navy-3: #1E3E66;
+  --color-navy-line: #16304F;
+  --color-teal: #0B7285;
+  --color-teal-dark: #075563;
+  --color-teal-tint: #E3F4F6;
+  --color-cyan: #7DD3E0;
+  --color-cyan-2: #38BDCF;
+  --color-cyan-pale: #A5F3FC;
+  --color-bg: #EEF3F8;
+  --color-card: #FFFFFF;
+  --color-border: #D9E2EC;
+  --color-border-soft: #E6ECF2;
+  --color-row-line: #EEF2F6;
+  --color-subtle: #F6F9FC;
+  --color-btn-border: #C5D1DE;
+  --color-ink: #0F1B2D;
+  --color-ink-2: #3A4A60;
+  --color-muted: #52627A;
+  --color-muted-2: #8FA3BD;
+  --color-on-navy: #C9D6E8;
+  --color-nav-label: #6F87A8;
+  --color-chip: #EDF1F5;
+
+  --color-p1: #C2410C;
+  --color-p1-tint: #FDEDE3;
+  --color-p1-border: #F3B48F;
+  --color-p1-text: #7C2D12;
+  --color-p1-pill: #9A3412;
+  --color-p2: #0B7285;
+  --color-p2-tint: #E3F4F6;
+  --color-p2-border: #8FD0D9;
+  --color-p2-text: #063F48;
+  --color-p3: #1A56DB;
+  --color-p3-tint: #E8EFFC;
+  --color-p3-border: #A9C1F2;
+  --color-p3-text: #1E3F9A;
+  --color-p4: #52627A;
+  --color-p4-tint: #F1F5F9;
+  --color-p4-border: #D3DCE6;
+  --color-p4-text: #24324A;
+
+  --color-allergy-bg: #FDECEA;
+  --color-allergy: #B42318;
+
+  --font-sans: var(--font-public-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --shadow-card: 0 1px 2px rgba(11, 31, 58, 0.05);
+  --shadow-raised: 0 1px 2px rgba(11, 31, 58, 0.05), 0 8px 24px rgba(11, 31, 58, 0.05);
+  --shadow-navy: 0 10px 30px rgba(11, 31, 58, 0.2);
+  --shadow-navy-strong: 0 10px 30px rgba(11, 31, 58, 0.25);
+}
+
+:root {
+  --navy: #0B1F3A;
+  --teal: #0B7285;
+  --bg: #EEF3F8;
+  --ink: #0F1B2D;
+}
+
+@layer base {
+html,
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--color-teal);
+}
+a:hover {
+  color: var(--color-teal-dark);
+}
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-cyan-2);
+  outline-offset: 2px;
+}
+
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.live-dot {
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}

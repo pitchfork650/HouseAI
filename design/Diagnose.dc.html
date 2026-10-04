@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swarm X-ray second opinion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEF3F8}
+a{color:#0B7285}a:hover{color:#075563}
+</style>
+</helmet>
+<div style="min-height: 1080px; display: flex; flex-wrap: wrap; background: #EEF3F8; color: #0F1B2D; font-family: 'Public Sans', system-ui, sans-serif">
+
+  <aside style="flex: 1 1 232px; box-sizing: border-box; background: #0B1F3A; color: #C9D6E8; padding: 22px 14px; display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 8px 22px">
+      <div style="width: 38px; height: 38px; border-radius: 11px; background: #0B7285; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"><path d="M7 3c-2.5 0-4 2-4 4.5 0 3 1.5 4.5 2 7.5.4 2.6 1 6 2.5 6s1.7-3.5 2.5-6c.3-1 1.7-1 2 0 .8 2.5 1 6 2.5 6s2.1-3.4 2.5-6c.5-3 2-4.5 2-7.5C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"></path></svg></div>
+      <div style="display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 17px; color: #FFFFFF">HouseAI</span><span style="font-size: 12px; color: #7DD3E0">Dental clinical suite</span></div>
+    </div>
+    <div style="padding: 6px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6F87A8">CLINIC</div>
+    <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h6"></path></svg>Flow</a>
+    <a href="Diagnose.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; background: #13335E; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7DD3E0" stroke-width="1.8" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8"></path></svg>Diagnostics<span style="margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #0B7285; color: #FFFFFF">5</span></a>
+    <a href="Schedule.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"></path></svg>Schedule</a>
+    <a href="Insurance.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4"></path></svg>Insurance</a>
+    <a href="FollowUp.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #C9D6E8; text-decoration: none; font-size: 14px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3zM3 7l9 6 9-6"></path></svg>Follow-ups</a>
+    <div style="margin-top: auto; padding: 14px; border-radius: 12px; background: #13335E; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.45">
+      <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #FFFFFF; font-size: 13px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7DD3E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>GDPR compliant</div>
+      <span>EU data residency · audit log on · encrypted at rest</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 14px 8px 0">
+      <div style="width: 34px; height: 34px; border-radius: 50%; background: #1E3E66; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">DR</div>
+      <div style="display: flex; flex-direction: column; font-size: 13px"><span style="color: #FFFFFF; font-weight: 600">Dr. [NAME]</span><span style="font-size: 12px">[PRACTICE NAME]</span></div>
+    </div>
+  </aside>
+
+  <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="background: #FFFFFF; border: 1px solid #D9E2EC; border-radius: 16px; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px; box-shadow: 0 1px 2px rgba(11,31,58,0.05)">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: #E8EFFC; color: #1A56DB; display: flex; align-items: center; justify-content: center; font-weight: 800">JM</div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 18px; font-weight: 700">Jordan M.</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #52627A">P-1042 · 34 Y · DOB [DATE]</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 8px; background: #FDECEA; color: #B42318"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3zM12 10v4M12 17v.01"></path></svg>Allergy: Penicillin</span>
+        <span style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; background: #EDF1F5; color: #3A4A60">No premedication needed</span>
+        <span style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; background: #EDF1F5; color: #3A4A60">Last X-rays 2025-03</span>
+      </div>
+      <div style="margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px">
+        <button style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #C5D1DE; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; color: #0F1B2D">Upload images</button>
+        <button style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: #0B7285; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF">Re-run swarm</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section style="flex: 999 1 600px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+        <div style="background: #05090F; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(11,31,58,0.25)">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #1A2533">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8FA3BD">PANORAMIC · 2026-10-02 09:12</span>
+            <div style="margin-left: auto; display: flex; gap: 6px">
+              <button aria-label="Zoom" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid #243246; background: #0D1520; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9D6E8" stroke-width="1.8" stroke-linecap="round"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4M11 8v6M8 11h6"></path></svg></button>
+              <button aria-label="Contrast" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid #243246; background: #0D1520; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9D6E8" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 3v18"></path></svg></button>
+              <button aria-label="Measure" style="width: 40px; height: 40px; border-radius: 8px; border: 1px solid #243246; background: #0D1520; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9D6E8" stroke-width="1.8" stroke-linecap="round"><path d="M4 16L16 4l4 4L8 20zM8 12l2 2M11 9l2 2M14 6l2 2"></path></svg></button>
+              <button style="height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid #0B7285; background: #0B7285; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 600">AI overlay on</button>
+            </div>
+          </div>
+          <svg viewBox="0 0 800 400" width="100%" style="display: block" role="img" aria-label="Sample panoramic X-ray with AI-flagged regions">
+            <defs>
+              <radialGradient id="glow" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#26303C"></stop><stop offset="100%" stop-color="#05090F"></stop></radialGradient>
+            </defs>
+            <rect width="800" height="400" fill="url(#glow)"></rect>
+            <ellipse cx="{{g.sinusL.cx}}" cy="{{g.sinusL.cy}}" rx="58" ry="30" fill="#080D14" opacity="0.8"></ellipse>
+            <ellipse cx="{{g.sinusR.cx}}" cy="{{g.sinusR.cy}}" rx="58" ry="30" fill="#080D14" opacity="0.8"></ellipse>
+            <path d="M60 175 Q400 150 740 175 L700 40 Q400 10 100 40 Z" fill="#3A4656" opacity="0.35"></path>
+            <path d="M40 110 L62 300 Q120 372 400 388 Q680 372 738 300 L760 110 L720 110 L705 215 Q400 250 95 215 L80 110 Z" fill="#3A4656" opacity="0.45"></path>
+            <path d="M95 215 Q400 250 705 215 L700 300 Q400 340 100 300 Z" fill="#3A4656" opacity="0.35"></path>
+            <path d="{{g.faint}}" fill="#B8C3CF" opacity="0.18"></path>
+            <path d="{{g.teeth}}" fill="#AEB9C6" opacity="0.62"></path>
+            <path d="{{g.enamel}}" fill="#E6ECF2" opacity="0.55"></path>
+            <path d="{{g.pulp}}" fill="#141B25" opacity="0.75"></path>
+            <path d="{{g.canals}}" stroke="#141B25" stroke-width="1.6" fill="none" opacity="0.75"></path>
+            <path d="{{g.resto}}" fill="#F7FAFC"></path>
+            <path d="{{g.caries}}" fill="#05090F" opacity="0.85"></path>
+            <path d="{{g.lesion}}" fill="#05090F" opacity="0.6"></path>
+            <path d="{{g.nerveL}}" stroke="#7DD3E0" stroke-width="1.5" stroke-dasharray="5 4" fill="none"></path>
+            <path d="{{g.nerveR}}" stroke="#7DD3E0" stroke-width="1.5" stroke-dasharray="5 4" fill="none"></path>
+            <text x="{{ann.canal.x}}" y="{{ann.canal.y}}" fill="#7DD3E0" font-family="IBM Plex Mono, monospace" font-size="10">nerve canal (traced)</text>
+            <rect x="{{ann.t17.x}}" y="{{ann.t17.y}}" width="{{ann.t17.w}}" height="{{ann.t17.h}}" rx="6" fill="none" stroke="#FBBF24" stroke-width="2"></rect>
+            <text x="{{ann.t17.x}}" y="{{ann.t17.ly}}" fill="#FCD34D" font-family="IBM Plex Mono, monospace" font-size="11">#17 partly bony</text>
+            <rect x="{{ann.t32.x}}" y="{{ann.t32.y}}" width="{{ann.t32.w}}" height="{{ann.t32.h}}" rx="6" fill="none" stroke="#FBBF24" stroke-width="2"></rect>
+            <text x="{{ann.t32.x}}" y="{{ann.t32.ly}}" fill="#FCD34D" font-family="IBM Plex Mono, monospace" font-size="11">#32 near canal</text>
+            <rect x="{{ann.t14.x}}" y="{{ann.t14.y}}" width="{{ann.t14.w}}" height="{{ann.t14.h}}" rx="6" fill="none" stroke="#60A5FA" stroke-width="2"></rect>
+            <text x="{{ann.t14.x}}" y="{{ann.t14.ly}}" fill="#93C5FD" font-family="IBM Plex Mono, monospace" font-size="11">#14 open margin</text>
+            <circle cx="{{ann.t30.x}}" cy="{{ann.t30.y}}" r="18" fill="#F97316" fill-opacity="0.15" stroke="#FB923C" stroke-width="2"></circle>
+            <text x="{{ann.t30.lx}}" y="{{ann.t30.ly}}" fill="#FDBA74" font-family="IBM Plex Mono, monospace" font-size="11">#30 root tip</text>
+            <circle cx="{{ann.t3.x}}" cy="{{ann.t3.y}}" r="8" fill="none" stroke="#60A5FA" stroke-width="2"></circle>
+            <text x="{{ann.t3.lx}}" y="{{ann.t3.ly}}" fill="#93C5FD" font-family="IBM Plex Mono, monospace" font-size="11">#3</text>
+            <circle cx="{{ann.t19.x}}" cy="{{ann.t19.y}}" r="8" fill="none" stroke="#60A5FA" stroke-width="2"></circle>
+            <text x="{{ann.t19.lx}}" y="{{ann.t19.ly}}" fill="#93C5FD" font-family="IBM Plex Mono, monospace" font-size="11">#19</text>
+          </svg>
+        </div>
+
+        <div style="background: #FFFFFF; border: 1px solid #D9E2EC; border-radius: 16px; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 2px rgba(11,31,58,0.05)">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center">
+            <h2 style="margin: 0; font-size: 16px; font-weight: 700">Tooth chart</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: #52627A">
+              <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #C2410C"></span>Urgent</span>
+              <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #0B7285"></span>Surgery</span>
+              <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #1A56DB"></span>Restorative</span>
+            </div>
+          </div>
+          <div style="overflow-x: auto">
+            <div style="min-width: 640px; display: flex; flex-direction: column; gap: 6px">
+              <div style="display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px">
+                <sc-for list="{{upper}}" as="t" hint-placeholder-count="16"><div style="{{t.style}}">{{t.n}}</div></sc-for>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px">
+                <sc-for list="{{lower}}" as="t" hint-placeholder-count="16"><div style="{{t.style}}">{{t.n}}</div></sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: #FFFFFF; border: 1px solid #D9E2EC; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(11,31,58,0.05)">
+          <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #E6ECF2">
+            <h2 style="margin: 0; font-size: 16px; font-weight: 700">Consensus findings</h2>
+            <span style="font-size: 13px; color: #52627A">6 of 7 agents reported · agreement = reporter + Verifier + Skeptic · dentist review required</span>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; min-width: 680px; border-collapse: collapse; font-size: 14px">
+              <thead>
+                <tr style="text-align: left; color: #52627A; font-size: 11px; letter-spacing: 0.08em; background: #F6F9FC">
+                  <th style="padding: 10px 20px; font-weight: 600">TOOTH</th>
+                  <th style="padding: 10px 12px; font-weight: 600">FINDING</th>
+                  <th style="padding: 10px 12px; font-weight: 600">AGREEMENT</th>
+                  <th style="padding: 10px 12px; font-weight: 600">SUGGESTED</th>
+                  <th style="padding: 10px 20px; font-weight: 600">PRIORITY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{findings}}" as="f" hint-placeholder-count="5">
+                  <tr style="border-top: 1px solid #EEF2F6">
+                    <td style="padding: 12px 20px; font-family: 'IBM Plex Mono', monospace; font-weight: 500">{{f.tooth}}</td>
+                    <td style="padding: 12px 12px">{{f.finding}}</td>
+                    <td style="padding: 12px 12px">
+                      <div style="display: flex; align-items: center; gap: 8px"><div style="width: 64px; height: 6px; border-radius: 99px; background: #E6ECF2; overflow: hidden"><div style="{{f.bar}}"></div></div><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">{{f.agree}}</span></div>
+                    </td>
+                    <td style="padding: 12px 12px; color: #3A4A60">{{f.proc}}</td>
+                    <td style="padding: 12px 20px"><span style="{{f.pill}}">{{f.prio}}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #E6ECF2; background: #F6F9FC">
+            <button style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #0B7285; font: inherit; font-size: 14px; font-weight: 700; color: #FFFFFF">Accept into treatment plan</button>
+            <a href="Schedule.dc.html" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #C5D1DE; background: #FFFFFF; font-size: 14px; font-weight: 600; color: #0F1B2D; text-decoration: none; display: inline-flex; align-items: center">Send to calendar</a>
+            <button style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #C5D1DE; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; color: #0F1B2D">Order periapical film for #30</button>
+          </div>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 360px; min-width: 0; background: #0B1F3A; color: #C9D6E8; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(11,31,58,0.2)">
+        <div style="padding: 18px 20px; border-bottom: 1px solid #1E3E66; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700; color: #FFFFFF">Diagnostic swarm</h2>
+            <span style="font-size: 12px; color: #8FA3BD">OpenSwarm · Gemini vision · 7 agents</span>
+          </div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 99px; background: #0B7285; color: #FFFFFF"><span style="width: 7px; height: 7px; border-radius: 50%; background: #A5F3FC"></span>Done in 14 s</span>
+        </div>
+        <div style="display: flex; flex-direction: column">
+          <sc-for list="{{agents}}" as="a" hint-placeholder-count="6">
+            <div style="padding: 14px 20px; border-bottom: 1px solid #16304F; display: flex; gap: 12px">
+              <div style="{{a.dot}}"></div>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+                  <span style="font-weight: 700; font-size: 14px; color: #FFFFFF">{{a.name}}</span>
+                  <span style="{{a.badge}}">{{a.status}}</span>
+                </div>
+                <div style="font-size: 12px; color: #8FA3BD">{{a.scope}}</div>
+                <div style="font-size: 13px; line-height: 1.5">{{a.result}}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding: 16px 20px; background: #13335E; font-size: 13px; line-height: 1.5">The shade agent had no intraoral photo to read, so it was skipped. The other agents still finished, and the consensus notes what wasn't checked.</div>
+      </aside>
+    </div>
+
+    <p style="margin: 0; font-size: 13px; color: #52627A">Decision support only. The swarm suggests and explains findings, and the dentist confirms each one before it reaches the chart.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  // Sample panoramic: per-tooth anatomy (mm) -> SVG paths. Universal numbering, upper #1-#16 and lower #32-#17 left to right.
+  pano() {
+    const S = 4.7, CX = 400, K = 0.00025, YU = 196, YL = 206;
+    const U = [[8.5,10.5,13,1,0,'flat'],[6.5,9,13,1,0,'flat'],[7.5,10,17,1,0,'point'],[7,8.5,14,2,0.6,'pm'],[6.5,7.5,14,1,0,'pm'],[10,7.5,12,2,0.3,'molar'],[9,7,11,2,0.35,'molar'],[8.5,6.5,11,2,0.75,'molar']];
+    const L = [[5,9,12.5,1,0,'flat'],[5.5,9.5,14,1,0,'flat'],[7,11,16,1,0,'point'],[7,8.5,14,1,0,'pm'],[7,8,14.5,1,0,'pm'],[11,7.5,14,2,0.25,'molar'],[10.5,7,13,2,0.3,'molar'],[10,7,11,2,0.7,'molar']];
+    const r = (v) => Math.round(v * 10) / 10;
+    const off = (x) => K * (x - CX) * (x - CX);
+    const upperNums = [], lowerNums = [];
+    for (let n = 1; n <= 16; n++) upperNums.push(n);
+    for (let n = 32; n >= 17; n--) lowerNums.push(n);
+    const typeIdx = (n) => n <= 8 ? 8 - n : n <= 16 ? n - 9 : n <= 24 ? 24 - n : n - 25;
+    const extra = { 32: { tilt: 45, deep: 7, pivot: 9 }, 17: { tilt: -30, deep: 3.5, pivot: 9 } };
+    const layout = (nums, upper) => {
+      const specs = nums.map((n) => (upper ? U : L)[typeIdx(n)]);
+      const gap = 2;
+      const total = specs.reduce((a, s) => a + s[0] * S, 0) + gap * (nums.length - 1);
+      let x = CX - total / 2;
+      return nums.map((n, i) => {
+        const w = specs[i][0] * S;
+        const cx = x + w / 2;
+        x += w + gap;
+        return { n, cx, spec: specs[i], upper };
+      });
+    };
+    const shapes = (spec, dist) => {
+      const [w, ch, rl, roots, fur, cusp] = spec;
+      const ax = dist * w * 0.06;
+      const A = roots === 2 ? [-w * 0.44, ch * 0.10] : [-w * 0.40, ch * 0.06];
+      const B = [-A[0], A[1]];
+      const cw = w * (roots === 2 ? 0.82 : 0.68);
+      const side = roots === 2 ? 0.53 : 0.52;
+      let occ;
+      if (cusp === 'point') occ = [['Q', w * 0.18, -ch * 0.02, 0, -ch * 0.10], ['Q', -w * 0.18, -ch * 0.02, A[0], A[1]]];
+      else if (cusp === 'pm') occ = [['Q', w * 0.25, -ch * 0.06, 0, ch * 0.03], ['Q', -w * 0.25, -ch * 0.06, A[0], A[1]]];
+      else if (cusp === 'molar') occ = [['Q', w * 0.32, -ch * 0.08, w * 0.08, ch * 0.05], ['Q', 0, ch * 0.09, -w * 0.08, ch * 0.05], ['Q', -w * 0.32, -ch * 0.08, A[0], A[1]]];
+      else occ = [['Q', 0, -ch * 0.03, A[0], A[1]]];
+      const crownL = ['Q', -w * side, ch * 0.47, -cw / 2, ch];
+      const crownR = ['Q', w * side, ch * 0.47, B[0], B[1]];
+      let root;
+      const lenL = roots === 2 && dist === -1 ? rl * 0.92 : rl;
+      const lenR = roots === 2 && dist === 1 ? rl * 0.92 : rl;
+      if (roots === 1) {
+        root = [
+          ['Q', -cw * 0.5, ch + rl * 0.55, -cw * 0.12 + ax, ch + rl * 0.97],
+          ['Q', ax, ch + rl * 1.03, cw * 0.12 + ax, ch + rl * 0.97],
+          ['Q', cw * 0.5, ch + rl * 0.55, cw / 2, ch]
+        ];
+      } else {
+        root = [
+          ['Q', -cw * 0.55, ch + lenL * 0.6, -cw * 0.36 + ax, ch + lenL * 0.97],
+          ['Q', -cw * 0.27 + ax, ch + lenL * 1.03, -cw * 0.16 + ax, ch + lenL * 0.95],
+          ['Q', -cw * 0.08, ch + rl * fur * 0.9 + (lenL - rl * fur) * 0.3, 0, ch + rl * fur],
+          ['Q', cw * 0.08, ch + rl * fur * 0.9 + (lenR - rl * fur) * 0.3, cw * 0.16 + ax, ch + lenR * 0.95],
+          ['Q', cw * 0.27 + ax, ch + lenR * 1.03, cw * 0.36 + ax, ch + lenR * 0.97],
+          ['Q', cw * 0.55, ch + lenR * 0.6, cw / 2, ch]
+        ];
+      }
+      const outline = [['M', A[0], A[1]], crownL].concat(root, [crownR], occ, [['Z']]);
+      const crown = [['M', A[0], A[1]], crownL, ['L', cw / 2, ch], crownR].concat(occ, [['Z']]);
+      let pulp, canals = [];
+      if (roots === 1) {
+        pulp = [['M', -w * 0.12, ch * 0.45], ['Q', -w * 0.14, ch * 0.9, -w * 0.05, ch + rl * 0.2], ['L', ax - 0.3, ch + rl * 0.9], ['L', ax + 0.3, ch + rl * 0.9], ['L', w * 0.05, ch + rl * 0.2], ['Q', w * 0.14, ch * 0.9, w * 0.12, ch * 0.45], ['Q', 0, ch * 0.32, -w * 0.12, ch * 0.45], ['Z']];
+      } else {
+        pulp = [['M', -w * 0.22, ch * 0.55], ['Q', 0, ch * 0.4, w * 0.22, ch * 0.55], ['L', w * 0.18, ch * 1.08], ['L', -w * 0.18, ch * 1.08], ['Z']];
+        canals = [
+          [['M', -w * 0.14, ch * 1.05], ['Q', -cw * 0.30, ch + lenL * 0.5, -cw * 0.26 + ax, ch + lenL * 0.9]],
+          [['M', w * 0.14, ch * 1.05], ['Q', cw * 0.30, ch + lenR * 0.5, cw * 0.26 + ax, ch + lenR * 0.9]]
+        ];
+      }
+      return { outline, crown, pulp, canals, w, ch, rl, cw, ax, lenL, lenR, roots };
+    };
+    const placer = (t) => {
+      const ex = extra[t.n] || { tilt: 0, deep: 0, pivot: 0 };
+      const y0 = (t.upper ? YU : YL) - off(t.cx);
+      const ang = Math.atan(-2 * K * (t.cx - CX)) * 0.6 + ex.tilt * Math.PI / 180;
+      const sgn = t.upper ? -1 : 1;
+      const cos = Math.cos(ang), sin = Math.sin(ang);
+      return (x, d) => {
+        const lx = x * S, ly = sgn * (d - ex.pivot) * S, base = sgn * (ex.pivot + ex.deep) * S;
+        return [t.cx + lx * cos - ly * sin, y0 + base + lx * sin + ly * cos];
+      };
+    };
+    const toPath = (cmds, P) => {
+      let s = '';
+      for (const c of cmds) {
+        if (c[0] === 'Z') { s += 'Z'; continue; }
+        const pts = [];
+        for (let i = 1; i < c.length; i += 2) { const p = P(c[i], c[i + 1]); pts.push(r(p[0]) + ' ' + r(p[1])); }
+        s += c[0] + pts.join(' ');
+      }
+      return s;
+    };
+    const out = { teeth: '', enamel: '', pulp: '', canals: '', faint: '', resto: '', caries: '', lesion: '', boxes: {}, apex: {} };
+    const all = layout(upperNums, true).concat(layout(lowerNums, false));
+    for (const t of all) {
+      const dist = t.cx < CX ? -1 : 1;
+      const mes = -dist;
+      const g = shapes(t.spec, dist);
+      const P = placer(t);
+      out.teeth += toPath(g.outline, P);
+      out.enamel += toPath(g.crown, P);
+      out.pulp += toPath(g.pulp, P);
+      for (const c of g.canals) out.canals += toPath(c, P);
+      if (t.upper && g.roots === 2 && t.spec[5] === 'molar') {
+        out.faint += toPath([['M', -g.cw * 0.18, g.ch], ['Q', g.ax * 0.5, g.ch + g.rl * 0.6, g.ax, g.ch + g.rl * 1.04], ['Q', g.ax * 0.5 + g.cw * 0.1, g.ch + g.rl * 0.6, g.cw * 0.18, g.ch], ['Z']], P);
+      }
+      let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+      for (const c of g.outline) {
+        if (c[0] === 'Z') continue;
+        const p = P(c[c.length - 2], c[c.length - 1]);
+        minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]); minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+      }
+      out.boxes[t.n] = { x: r(minX - 6), y: r(minY - 6), w: r(maxX - minX + 12), h: r(maxY - minY + 12) };
+      if (t.n === 14) {
+        out.resto += toPath(g.crown, P);
+        out.caries += toPath([['M', dist * g.cw * 0.5, g.ch * 0.82], ['L', dist * (g.cw * 0.5 + 0.7), g.ch * 0.82], ['L', dist * g.cw * 0.5, g.ch * 1.08], ['Z']], P);
+      }
+      if (t.n === 30) {
+        out.resto += toPath([['M', -g.w * 0.3, g.ch * 0.05], ['L', g.w * 0.3, g.ch * 0.05], ['L', g.w * 0.2, g.ch * 0.6], ['L', -g.w * 0.2, g.ch * 0.6], ['Z']], P);
+        const mApex = mes === -1 ? [-g.cw * 0.26 + g.ax, g.ch + g.lenL] : [g.cw * 0.26 + g.ax, g.ch + g.lenR];
+        const c = P(mApex[0], mApex[1] + 0.8);
+        out.apex[30] = { x: r(c[0]), y: r(c[1]) };
+        out.lesion += 'M' + r(c[0] - 15) + ' ' + r(c[1]) + 'a15 13 0 1 0 30 0a15 13 0 1 0 -30 0Z';
+      }
+      if (t.n === 3 || t.n === 19) {
+        const c = P(mes * g.w * 0.46, g.ch * 0.38);
+        out.caries += 'M' + r(c[0] - 5) + ' ' + r(c[1]) + 'a5 6 0 1 0 10 0a5 6 0 1 0 -10 0Z';
+        out.boxes[t.n].dot = { x: r(c[0]), y: r(c[1]) };
+      }
+      if ([17, 19, 20, 29, 30, 32].indexOf(t.n) !== -1) {
+        const a = P(0, g.ch + g.rl);
+        out.apex['r' + t.n] = { x: r(a[0]), y: r(a[1]) };
+      }
+    }
+    const canal = (m3, m1, pm2, edgeX) => {
+      const a3 = out.apex['r' + m3], a1 = out.apex['r' + m1], ap = out.apex['r' + pm2];
+      return 'M' + edgeX + ' ' + r(a3.y - 40) + 'C' + r(a3.x) + ' ' + r(a3.y + 10) + ' ' + r(a1.x) + ' ' + r(a1.y + 26) + ' ' + r(ap.x) + ' ' + r(ap.y + 10);
+    };
+    out.nerveL = canal(32, 30, 29, 70);
+    out.nerveR = canal(17, 19, 20, 730);
+    out.canalEnd = out.apex.r20;
+    const u = layout(upperNums, true);
+    out.sinusL = { cx: r(u[2].cx + 6), cy: r(YU - off(u[2].cx) - 112) };
+    out.sinusR = { cx: r(u[13].cx - 6), cy: r(YU - off(u[13].cx) - 112) };
+    return out;
+  }
+  renderVals() {
+    if (!this._g) this._g = this.pano();
+    const g = this._g, b = g.boxes;
+    const ann = {
+      t17: { x: b[17].x, y: b[17].y, w: b[17].w, h: b[17].h, ly: Math.round(b[17].y + b[17].h + 14) },
+      t32: { x: b[32].x, y: b[32].y, w: b[32].w, h: b[32].h, ly: Math.round(b[32].y + b[32].h + 14) },
+      t14: { x: b[14].x, y: b[14].y, w: b[14].w, h: b[14].h, ly: Math.round(b[14].y - 6) },
+      t30: { x: g.apex[30].x, y: g.apex[30].y, lx: Math.round(g.apex[30].x + 22), ly: Math.round(g.apex[30].y + 5) },
+      t3: { x: b[3].dot.x, y: b[3].dot.y, lx: Math.round(b[3].dot.x - 8), ly: Math.round(b[3].dot.y + 22) },
+      t19: { x: b[19].dot.x, y: b[19].dot.y, lx: Math.round(b[19].dot.x + 10), ly: Math.round(b[19].dot.y - 14) },
+      canal: { x: Math.round(g.canalEnd.x + 10), y: Math.round(g.canalEnd.y + 34) }
+    };
+    const pill = (bg, fg) => 'display:inline-block;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:700;background:' + bg + ';color:' + fg;
+    const P = { P1: pill('#FDEDE3', '#9A3412'), P2: pill('#E3F4F6', '#075563'), P3: pill('#E8EFFC', '#1E3F9A'), P4: pill('#EDF1F5', '#3A4A60') };
+    const bar = (pct, c) => 'height:100%;width:' + pct + '%;background:' + c + ';border-radius:99px';
+    const badge = (bg, fg) => 'font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;background:' + bg + ';color:' + fg;
+    const dot = (c) => 'width:10px;height:10px;margin-top:5px;flex:none;border-radius:50%;background:' + c + ';box-shadow:0 0 0 4px rgba(255,255,255,0.06)';
+    const done = badge('#0B7285', '#FFFFFF'), flag = badge('#FDEDE3', '#9A3412'), skip = badge('#1E3E66', '#C9D6E8');
+    const flagged = { 30: '#C2410C', 17: '#0B7285', 32: '#0B7285', 14: '#1A56DB', 3: '#1A56DB', 19: '#1A56DB' };
+    const cell = (n) => ({ n: n, style: 'height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:IBM Plex Mono,monospace;font-size:12px;font-weight:600;' + (flagged[n] ? 'background:' + flagged[n] + ';color:#FFFFFF' : 'background:#F1F5F9;color:#52627A;border:1px solid #E2E8F0') });
+    const upper = [], lower = [];
+    for (let i = 1; i <= 16; i++) upper.push(cell(i));
+    for (let i = 32; i >= 17; i--) lower.push(cell(i));
+    return {
+      upper, lower, g, ann,
+      findings: [
+        { tooth: '#30', finding: 'Dark spot at the root tip (likely infection)', agree: '2/3', bar: bar(67, '#C2410C'), proc: 'D3330 root canal, molar · 75 min (D0220 PA film first)', prio: 'P1', pill: P.P1 },
+        { tooth: '#32', finding: 'Impacted wisdom tooth (completely bony), roots on the nerve canal', agree: '3/3', bar: bar(100, '#0B7285'), proc: 'D7240 · 60 min (D0367 CBCT first)', prio: 'P2', pill: P.P2 },
+        { tooth: '#17', finding: 'Impacted wisdom tooth (partially bony)', agree: '3/3', bar: bar(100, '#0B7285'), proc: 'D7230 · 45 min', prio: 'P2', pill: P.P2 },
+        { tooth: '#14', finding: 'Gap at the crown edge (open margin)', agree: '2/3', bar: bar(67, '#1A56DB'), proc: 'D2740 new crown · 90 min, 2 visits', prio: 'P3', pill: P.P3 },
+        { tooth: '#3 #19', finding: 'Cavities between teeth, into the dentin', agree: '3/3', bar: bar(100, '#1A56DB'), proc: 'D2391 ×2 · 45 min, one visit', prio: 'P3', pill: P.P3 }
+      ],
+      agents: [
+        { name: 'Caries Scout', scope: 'Bitewings · cavities between teeth', status: '2 found', badge: done, dot: dot('#38BDCF'), result: 'Dentin-level cavities on #3 (side facing #4) and #19 (side facing #20).' },
+        { name: 'Root-Tip Agent', scope: 'Panoramic · infection at root tips', status: 'Flagged', badge: flag, dot: dot('#FB923C'), result: 'Dark area around 3 mm at the root tip of #30. Confidence 0.71.' },
+        { name: 'Third-Molar Agent', scope: 'Panoramic · wisdom teeth, nerve canal', status: '2 found', badge: done, dot: dot('#38BDCF'), result: '#32 roots overlap the nerve canal; recommend a 3D scan (CBCT) before surgery.' },
+        { name: 'Restoration Auditor', scope: 'Crowns · fillings · root canals', status: '1 found', badge: done, dot: dot('#38BDCF'), result: 'Open margin on the #14 crown, near the gumline.' },
+        { name: 'Verifier', scope: 'Independently re-reads every finding', status: '5 of 6 confirmed', badge: done, dot: dot('#38BDCF'), result: 'Confirmed #3, #19, #17, #32 and #30. Could not confirm the #14 margin gap on the panoramic alone.' },
+        { name: 'Skeptic', scope: 'Challenges every finding', status: 'Challenged 1', badge: flag, dot: dot('#FB923C'), result: 'The #30 dark area could be an overlapping shadow. Confirm with a periapical film before treating.' },
+        { name: 'Shade Agent', scope: 'Intraoral photos · cosmetic', status: 'Skipped', badge: skip, dot: dot('#52627A'), result: 'No intraoral photo uploaded. Nothing else was affected.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

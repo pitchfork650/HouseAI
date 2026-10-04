@@ -4,293 +4,266 @@ import { DEFAULT_ROUTES } from "@/lib/config";
 import { dayEyebrow } from "@/lib/clock";
 import { navItems } from "@/lib/nav";
 import { DEFAULT_DAY } from "@/lib/schedule";
-import { swarmHost } from "@/lib/swarm/host";
-import { FLOW_ROWS, COMPLIANCE_ITEMS, type FlowStep } from "@/content/flow";
+import type { OverlayShape } from "@/lib/pano";
+import { FLOW_ROWS, COMPLIANCE_ITEMS } from "@/content/flow";
 import { Icon, LogoTile, type IconName } from "@/components/icons";
-import { TopNav } from "@/components/TopNav";
-import { CountUp, Reveal } from "@/components/landing/Motion";
-import { btnPrimary } from "@/components/ui";
+import { LandingNav } from "@/components/landing/LandingNav";
+import { HeroDemo, type DemoFinding } from "@/components/landing/HeroDemo";
+import { Workflow, type WorkflowStep } from "@/components/landing/Workflow";
+import { CountUp, Reveal, ScrollTilt, Words } from "@/components/landing/Motion";
+import { CalendarVisual, FollowupVisual, InsuranceVisual, IntakeVisual, SwarmVisual } from "@/components/landing/Visuals";
 
 export const dynamic = "force-dynamic";
 
-function Arrow({ dashed = false }: { dashed?: boolean }) {
+const PRIORITY_ORDER = ["P1", "P2", "P3", "P4"];
+
+function Feature({ eyebrow, title, body, children, className = "", delay = 0 }: { eyebrow: string; title: string; body: string; children: React.ReactNode; className?: string; delay?: number }) {
   return (
-    <div className="flex w-[44px] flex-none items-center justify-center max-[800px]:hidden" aria-hidden="true">
-      <svg width="34" height="14" viewBox="0 0 34 14" fill="none" stroke="#8FA3BD" strokeWidth="1.8" className={dashed ? "" : "flow-arrow"} strokeDasharray={dashed ? "3 3" : undefined}>
-        {dashed ? <path d="M1 7h30" /> : <><path d="M1 7h24" /><path d="M25 2l6 5-6 5" style={{ strokeDasharray: "none", animation: "none" }} /></>}
-      </svg>
-    </div>
+    <Reveal delay={delay} className={`lp-card flex flex-col overflow-hidden ${className}`}>
+      <div className="flex flex-col gap-2 p-7 pb-0 max-[640px]:p-5 max-[640px]:pb-0">
+        <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-lp-accent">{eyebrow}</span>
+        <h3 className="m-0 text-[20px] font-semibold tracking-[-0.02em] text-lp-ink">{title}</h3>
+        <p className="m-0 max-w-[460px] text-[14px] leading-[1.6] text-lp-muted">{body}</p>
+      </div>
+      <div className="flex flex-1 items-center justify-center p-7 max-[640px]:p-5">{children}</div>
+    </Reveal>
   );
 }
 
-function StepCard({ s }: { s: FlowStep }) {
-  const sw = !!s.swarm;
-  return (
-    <Link
-      href={s.href}
-      className={`lift group box-border flex h-full w-[316px] min-w-[200px] max-w-full flex-shrink flex-col gap-3 rounded-[16px] p-[22px] no-underline max-[800px]:w-full max-[800px]:min-w-0 ${
-        sw ? "bg-navy text-white hover:text-white" : "border border-border bg-white text-ink hover:border-[#B9C8D8] hover:text-ink"
-      }`}
-      style={{ boxShadow: sw ? "0 10px 30px rgba(11,31,58,0.25)" : "0 1px 2px rgba(11,31,58,0.05), 0 8px 24px rgba(11,31,58,0.05)" }}
-    >
-      <div className="flex items-center justify-between">
-        <div className={`flex h-[44px] w-[44px] items-center justify-center rounded-[12px] transition-transform duration-300 group-hover:scale-110 ${sw ? "bg-teal" : "bg-p3-tint"}`}>
-          <Icon name={s.icon} size={22} color={sw ? "#FFFFFF" : "#1A56DB"} />
-        </div>
-        <span className={`inline-flex items-center gap-[6px] rounded-full px-[10px] py-1 text-[12px] font-semibold ${sw ? "bg-teal text-white" : "bg-chip text-ink-2"}`}>
-          {sw ? <span className="live-dot h-[6px] w-[6px] rounded-full bg-cyan-pale" /> : null}
-          {s.tag}
-        </span>
-      </div>
-      <div className="flex items-baseline gap-[10px]">
-        <span className="whitespace-nowrap font-mono text-[13px]" style={{ color: sw ? "#7DD3E0" : "#52627A" }}>
-          {s.num}
-        </span>
-        <h3 className="m-0 text-[21px] font-bold">{s.title}</h3>
-      </div>
-      <p className="m-0 text-[14px] leading-[1.55]" style={{ color: sw ? "#C9D6E8" : "#3A4A60" }}>
-        {s.body}
-      </p>
-      <div
-        className="mt-auto flex items-center justify-between border-t pt-3 text-[13px] font-semibold"
-        style={{ borderColor: sw ? "#1E3E66" : "#E6ECF2", color: sw ? "#7DD3E0" : "#52627A" }}
-      >
-        {s.out}
-        <span className="translate-x-0 opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" aria-hidden="true">
-          →
-        </span>
-      </div>
-    </Link>
-  );
-}
-
-const AGENT_DOT: Record<string, string> = { done: "#38BDCF", flag: "#FB923C", skip: "#52627A", failed: "#FB923C", running: "#A5F3FC", queued: "#52627A" };
-
-export default async function FlowPage() {
-  const [items, host, apptsToday, followUps, run] = await Promise.all([
+export default async function LandingPage() {
+  const [items, apptsToday, followUps, run] = await Promise.all([
     navItems(),
-    swarmHost().status(),
     prisma.appointment.count({ where: { date: DEFAULT_DAY, isHold: false } }),
     prisma.followUp.count({ where: { status: { in: ["draft", "approved"] } } }),
-    prisma.swarmRun.findFirst({ where: { kind: "diagnostic" }, orderBy: { startedAt: "desc" }, include: { agents: { orderBy: { order: "asc" } }, patient: true } }),
+    prisma.swarmRun.findFirst({
+      where: { kind: "diagnostic" },
+      orderBy: { startedAt: "desc" },
+      include: { agents: { orderBy: { order: "asc" } }, findings: { orderBy: { order: "asc" } } },
+    }),
   ]);
-  const findings = items.find((i) => i.key === "diagnostics")?.count ?? 0;
-  const lanes = items.find((i) => i.key === "insurance")?.count ?? 0;
-  const kpis: { label: string; value: number; icon: IconName; href: string; tone: string }[] = [
-    { label: "Appointments booked", value: apptsToday, icon: "calendar", href: "/schedule", tone: "#7DD3E0" },
-    { label: "Findings awaiting sign-off", value: findings, icon: "scan", href: DEFAULT_ROUTES.diagnostics, tone: "#A5F3FC" },
-    { label: "Insurance lanes retrying", value: lanes, icon: "shieldCheck", href: DEFAULT_ROUTES.insurance, tone: "#FDBA74" },
-    { label: "Follow-ups queued", value: followUps, icon: "mail", href: DEFAULT_ROUTES.followUp, tone: "#7DD3E0" },
+  const awaitingSignOff = items.find((i) => i.key === "diagnostics")?.count ?? 0;
+  const agents = (run?.agents ?? []).map((a) => ({ name: a.name, badge: a.badge, status: a.status }));
+  const findings: DemoFinding[] = (run?.findings ?? [])
+    .map((f) => ({
+      teeth: f.teeth as number[],
+      priority: f.priority,
+      title: f.text.split(",")[0],
+      suggested: f.suggested,
+      agreement: f.agreement,
+      overlay: f.overlay as OverlayShape[],
+    }))
+    .sort((a, b) => PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority));
+  const swarmNames = agents.filter((a) => a.status !== "skip" && a.name !== "Skeptic" && a.name !== "Verifier").slice(0, 5).map((a) => a.name);
+
+  const steps: WorkflowStep[] = FLOW_ROWS.flatMap((row) =>
+    row.steps.map((s) => ({ num: s.num.split(" ")[0], title: s.title, icon: s.icon, tag: s.tag, body: s.body, out: s.out.replace(/^Out:\s*/, "→ "), swarm: s.swarm, href: s.href, phase: row.eyebrow.split(" · ")[0] === "BEFORE THE VISIT" ? "Before the visit" : "After diagnosis" })),
+  );
+  const loop = FLOW_ROWS.find((r) => r.loopsBack)?.loopsBack;
+
+  const stats = [
+    { value: apptsToday, label: "appointments booked automatically for the demo clinic's day" },
+    { value: agents.length, label: "specialist agents read every panoramic X-ray" },
+    { value: awaitingSignOff, label: "findings waiting on the dentist, never auto-charted" },
+    { value: followUps, label: "personalized follow-ups drafted and queued" },
   ];
-  const hostLabel = host.connected ? "OpenSwarm host connected" : host.kind === "mock" ? "OpenSwarm · mock mode" : `OpenSwarm · ${host.label.replace("Host ", "")}`;
-  const trust: { icon: IconName; title: string; body: string }[] = [
-    { icon: "shieldCheck", title: "GDPR by design", body: "Consent per purpose, EU data residency, export and erasure." },
-    { icon: "document", title: "Audit log", body: "Every agent output and every human decision is recorded." },
-    { icon: "swarm", title: "Minimal data to AI", body: "Agents see images and minimum context. Never names." },
-    { icon: "check", title: "Dentist signs off", body: "Your dentist confirms every finding before it reaches the chart." },
+
+  const security: { icon: IconName; title: string; body: string }[] = [
+    { icon: "check", title: "The dentist signs off", body: "Agents suggest. Every clinical finding waits for your dentist before it touches the chart." },
+    { icon: "document", title: "Every decision on record", body: "Each agent output and each human approval is written to an audit log you can export." },
+    { icon: "swarm", title: "Minimum data to models", body: "Agents see images and the context they need. Never names, never contact details." },
+    { icon: "shieldCheck", title: "GDPR by design", body: "Consent per purpose, EU data residency, data export and erasure built in." },
   ];
 
   return (
-    <div className="box-border flex min-h-screen flex-col bg-bg text-ink">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-white/10 bg-navy/90 backdrop-blur-md" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-2 px-16 py-2 max-[800px]:px-4">
-          <Link href="/" className="flex items-center gap-3 no-underline">
-            <LogoTile size={32} radius={9} glyph={18} />
-            <span className="flex flex-col leading-tight">
-              <span className="text-[15px] font-extrabold text-white">HouseAI</span>
-              <span className="text-[11px] text-cyan">Dental clinical suite</span>
-            </span>
-          </Link>
-          <div className="min-w-0 flex-1 max-[1100px]:order-3 max-[1100px]:basis-full">
-            <TopNav items={items} />
-          </div>
-          <span className="hidden items-center gap-2 rounded-full bg-navy-2 px-3 py-[6px] text-[12px] font-semibold text-white min-[900px]:inline-flex" title={host.detail}>
-            <span className={`h-2 w-2 rounded-full ${host.connected ? "ping" : ""}`} style={{ background: host.connected ? "#34D399" : "#FBBF24" }} />
-            {hostLabel}
-          </span>
-        </div>
-      </div>
+    <div className="lp min-h-screen">
+      <LandingNav demoHref={DEFAULT_ROUTES.diagnostics} />
 
       {/* Hero */}
-      <header className="relative overflow-hidden bg-navy text-white">
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="glow absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full opacity-40 blur-3xl" style={{ background: "radial-gradient(circle, #0B7285 0%, transparent 70%)" }} />
-          <div className="glow-slow absolute -right-32 top-10 h-[460px] w-[460px] rounded-full opacity-30 blur-3xl" style={{ background: "radial-gradient(circle, #38BDCF 0%, transparent 70%)" }} />
-          <div
-            className="absolute inset-0 opacity-[0.07]"
-            style={{ backgroundImage: "linear-gradient(#7DD3E0 1px, transparent 1px), linear-gradient(90deg, #7DD3E0 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "linear-gradient(to bottom, black, transparent 85%)" }}
-          />
-          <svg width="1600" height="120" viewBox="0 0 1600 120" fill="none" className="absolute bottom-0 left-0 opacity-50">
-            <path className="heartbeat" d="M0 80 H520 L540 80 L556 40 L572 108 L588 20 L604 96 L616 80 H1040 L1056 80 L1068 56 L1080 96 L1092 80 H1600" stroke="#38BDCF" strokeWidth="2" />
-          </svg>
+      <header className="relative overflow-hidden">
+        <div className="lp-hero-wash pointer-events-none absolute inset-x-0 top-0 h-[900px]" aria-hidden="true" />
+        <div className="relative mx-auto flex max-w-[1200px] flex-col items-center px-6 pt-20 text-center max-[640px]:px-4 max-[640px]:pt-12">
+          <a href="#workflow" className="lp-fade mb-8 inline-flex items-center gap-2 rounded-full border border-lp-line bg-lp-surface/80 py-1 pl-1 pr-3 text-[13px] text-lp-muted no-underline backdrop-blur transition-colors hover:border-lp-line-strong hover:text-lp-ink">
+            <span className="rounded-full bg-lp-accent-tint px-2 py-[2px] text-[12px] font-medium text-lp-accent">New</span>
+            Recall X-rays now compared against earlier visits
+            <span aria-hidden="true">→</span>
+          </a>
+          <h1 className="m-0 max-w-[920px] text-[76px] font-semibold leading-[1.02] tracking-[-0.045em] text-lp-ink max-[900px]:text-[56px] max-[640px]:text-[40px]">
+            <Words text="From X-ray to follow-up," />
+            <br className="max-[640px]:hidden" />
+            <Words text="on one record." start={300} className="text-lp-faint" />
+          </h1>
+          <p className="lp-fade m-0 mt-7 max-w-[600px] text-[19px] leading-[1.55] text-lp-muted max-[640px]:text-[16px]" style={{ animationDelay: "550ms" }}>
+            HouseAI runs the work between the chair and the front desk. Agent swarms read every X-ray, fill the calendar, chase insurance and bring patients back, while your dentists sign off on every finding.
+          </p>
+          <div className="lp-fade mt-9 flex flex-wrap items-center justify-center gap-3" style={{ animationDelay: "700ms" }}>
+            <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
+              Open the live demo
+              <span className="lp-btn-arrow" aria-hidden="true">→</span>
+            </Link>
+            <a href="#workflow" className="lp-btn lp-btn-ghost h-11 px-5 text-[15px]">
+              See how it works
+            </a>
+          </div>
         </div>
 
-        <div className="relative mx-auto flex max-w-[1600px] flex-wrap items-center gap-12 px-16 pb-20 pt-16 max-[800px]:gap-8 max-[800px]:px-5 max-[800px]:pb-14 max-[800px]:pt-10">
-          <div className="flex min-w-0 flex-col gap-6" style={{ flex: "999 1 560px" }}>
-            <div className="rise flex items-center gap-4" style={{ animationDelay: "0ms" }}>
-              <LogoTile size={64} radius={18} glyph={34} />
-              <div className="flex flex-col gap-1">
-                <div className="font-mono text-[13px] tracking-[0.1em] text-cyan">HOUSEAI DENTAL · CLINICAL FLOW</div>
-                <div className="text-[13px] text-on-navy">For cosmetic, restorative and general dental practices</div>
-              </div>
-            </div>
-            <h1 className="rise m-0 max-w-[820px] text-[56px] font-extrabold leading-[1.05] tracking-[-0.02em] max-[800px]:text-[36px]" style={{ animationDelay: "80ms" }}>
-              From X-ray to follow-up, <span className="bg-gradient-to-r from-cyan to-cyan-2 bg-clip-text text-transparent">one record</span>
-            </h1>
-            <p className="rise m-0 max-w-[640px] text-[18px] leading-[1.6] text-on-navy max-[800px]:text-[16px]" style={{ animationDelay: "160ms" }}>
-              AI swarms read every X-ray, build the calendar, chase insurance and bring patients back for their next visit. Your dentists stay in control: every clinical finding waits for their sign-off.
-            </p>
-            <div className="rise flex flex-wrap gap-3" style={{ animationDelay: "240ms" }}>
-              <Link href={DEFAULT_ROUTES.diagnostics} className={`${btnPrimary} px-5 text-[15px] shadow-[0_8px_24px_rgba(11,114,133,0.45)]`}>
-                <Icon name="scan" size={18} color="#FFFFFF" />
-                See the X-ray swarm
-              </Link>
-              <Link
-                href="/schedule"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-[10px] border border-white/25 bg-white/5 px-5 text-[15px] font-semibold text-white no-underline backdrop-blur hover:bg-white/10 hover:text-white"
-              >
-                <Icon name="calendar" size={18} />
-                Explore the schedule
-              </Link>
-            </div>
-            <div className="rise flex flex-wrap gap-[10px]" style={{ animationDelay: "320ms" }}>
-              <span className="inline-flex items-center gap-2 rounded-full bg-teal px-[14px] py-2 text-[13px] font-semibold text-white">
-                <span className="live-dot h-2 w-2 rounded-full bg-cyan-pale" />
-                OpenSwarm agents
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-navy-2 px-[14px] py-2 text-[13px] text-on-navy">
-                <span className="h-2 w-2 rounded-full" style={{ background: "#93A8C4" }} />
-                Single model call or rules
-              </span>
-            </div>
-          </div>
-
-          {/* Today panel */}
-          <div className="rise min-w-0 rounded-[20px] border border-white/10 bg-white/[0.06] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl" style={{ flex: "1 1 420px", animationDelay: "200ms" }}>
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex flex-col">
-                <span className="font-mono text-[11px] tracking-[0.1em] text-cyan">LIVE DEMO CLINIC</span>
-                <span className="text-[13px] text-muted-2">Sample data · {dayEyebrow(DEFAULT_DAY)}</span>
-              </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-teal/30 px-3 py-1 text-[12px] font-semibold text-cyan-pale">
-                <span className="live-dot h-[7px] w-[7px] rounded-full bg-cyan-pale" />
-                Live
-              </span>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {kpis.map((k) => (
-                <Link key={k.label} href={k.href} className="group flex flex-col gap-1 rounded-[14px] border border-white/10 bg-navy/60 p-4 no-underline transition-colors hover:border-cyan/40 hover:bg-navy-2/80">
-                  <span className="flex items-center justify-between">
-                    <Icon name={k.icon} size={18} color={k.tone} />
-                    <span className="text-[12px] text-muted-2 opacity-0 transition-opacity group-hover:opacity-100">Open →</span>
-                  </span>
-                  <span className="text-[34px] font-extrabold leading-none text-white">
-                    <CountUp value={k.value} />
-                  </span>
-                  <span className="text-[12px] leading-snug text-on-navy">{k.label}</span>
-                </Link>
-              ))}
-            </div>
-            {run ? (
-              <div className="mt-4 rounded-[14px] border border-white/10 bg-navy/60">
-                <div className="flex items-center justify-between border-b border-white/10 px-4 py-[10px]">
-                  <span className="text-[13px] font-bold text-white">Diagnostic swarm · {run.patientId}</span>
-                  <span className="font-mono text-[11px] text-muted-2">{run.agents.length} agents</span>
-                </div>
-                <ul className="m-0 flex list-none flex-col p-0">
-                  {run.agents.map((a, i) => (
-                    <li key={a.id} className="ticker-row flex items-center gap-3 border-b border-white/5 px-4 py-[7px] text-[12px] last:border-0" style={{ animationDelay: `${500 + i * 90}ms` }}>
-                      <span className={`h-2 w-2 flex-none rounded-full ${a.status === "flag" ? "ping" : ""}`} style={{ background: AGENT_DOT[a.status] ?? "#38BDCF" }} />
-                      <span className="flex-1 truncate text-on-navy">{a.name}</span>
-                      <span className="whitespace-nowrap font-semibold" style={{ color: a.status === "flag" ? "#FDBA74" : a.status === "skip" ? "#8FA3BD" : "#7DD3E0" }}>
-                        {a.badge}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
+        <div className="lp-rise relative mx-auto mt-16 max-w-[1200px] px-6 max-[640px]:mt-10 max-[640px]:px-3" style={{ animationDelay: "850ms" }}>
+          <ScrollTilt>
+            {run ? <HeroDemo patientId={run.patientId} dayLabel={dayEyebrow(DEFAULT_DAY)} agents={agents} findings={findings} /> : null}
+          </ScrollTilt>
+          <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">Synthetic demo patient. Decision support only.</p>
         </div>
       </header>
 
-      {/* Trust strip */}
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto grid max-w-[1600px] gap-6 px-16 py-8 max-[800px]:px-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-          {trust.map((t, i) => (
-            <Reveal key={t.title} delay={i * 80} className="flex items-start gap-3">
-              <div className="flex h-10 w-10 flex-none items-center justify-center rounded-[11px] bg-teal-tint">
-                <Icon name={t.icon} size={20} color="#0B7285" />
-              </div>
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[14px] font-bold">{t.title}</span>
-                <span className="text-[13px] leading-[1.5] text-muted">{t.body}</span>
-              </div>
+      {/* Stats */}
+      <section className="mx-auto max-w-[1200px] px-6 pb-8 pt-24 max-[640px]:px-4 max-[640px]:pt-16">
+        <div className="grid grid-cols-4 border-y border-lp-line max-[900px]:grid-cols-2">
+          {stats.map((s, i) => (
+            <Reveal key={s.label} delay={i * 80} className="flex flex-col gap-2 border-lp-line px-6 py-8 [&:not(:first-child)]:border-l max-[900px]:[&:nth-child(3)]:border-l-0 max-[900px]:[&:nth-child(n+3)]:border-t max-[640px]:px-4">
+              <span className="text-[44px] font-semibold leading-none tracking-[-0.04em] text-lp-ink max-[640px]:text-[34px]">
+                <CountUp value={s.value} />
+              </span>
+              <span className="max-w-[220px] text-[14px] leading-[1.5] text-lp-muted">{s.label}</span>
             </Reveal>
           ))}
         </div>
       </section>
 
-      {/* Flow */}
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-[30px] px-16 py-12 max-[800px]:px-4 max-[800px]:py-8">
-        <Reveal className="flex flex-col gap-2">
-          <h2 className="m-0 text-[30px] font-extrabold tracking-[-0.01em]">How a patient moves through your practice</h2>
-          <p className="m-0 max-w-[720px] text-[15px] leading-[1.6] text-ink-2">Seven steps share one record. Dark cards are agent swarms; light cards are a single model call or rules. Click any step to open it.</p>
+      {/* Product */}
+      <section id="product" className="mx-auto max-w-[1200px] scroll-mt-20 px-6 py-24 max-[640px]:px-4 max-[640px]:py-16">
+        <Reveal className="mb-14 flex max-w-[720px] flex-col gap-4">
+          <span className="text-[13px] font-medium text-lp-accent">Product</span>
+          <h2 className="m-0 text-[48px] font-semibold leading-[1.05] tracking-[-0.04em] text-lp-ink max-[640px]:text-[34px]">
+            Everything between the chair and the front desk.
+          </h2>
+          <p className="m-0 text-[17px] leading-[1.6] text-lp-muted">
+            Five modules share one patient record. Swarms handle the work that needs judgement and a second opinion; simple rules handle the rest.
+          </p>
         </Reveal>
-        {FLOW_ROWS.map((row) => (
-          <section key={row.eyebrow} className="flex flex-col gap-[14px]">
-            <Reveal className="flex items-center gap-3 font-mono text-[12px] tracking-[0.1em] text-muted">
-              <span className="h-[2px] w-6 bg-teal" />
-              {row.eyebrow}
-            </Reveal>
-            <div className="flex items-stretch max-[800px]:flex-col max-[800px]:gap-4">
-              {row.steps.map((s, i) => (
-                <Reveal key={s.num} delay={i * 110} className="flex min-w-0 items-stretch" >
-                  <StepCard s={s} />
-                  {s.arrow ? <Arrow /> : null}
-                </Reveal>
-              ))}
-              {row.loopsBack ? (
-                <Reveal delay={row.steps.length * 110} className="flex min-w-0 items-stretch">
-                  <Arrow dashed />
-                  <Link
-                    href={row.loopsBack.href}
-                    className="lift group box-border flex w-[316px] min-w-[200px] max-w-full flex-shrink flex-col justify-center gap-[10px] rounded-[16px] p-[22px] text-ink no-underline hover:text-ink max-[800px]:w-full max-[800px]:min-w-0"
-                    style={{ border: "1.5px dashed #8FA3BD" }}
-                  >
-                    <div className="flex items-center gap-[10px] text-[16px] font-bold">
-                      <Icon name="loop" size={20} color="#0B7285" className="transition-transform duration-500 group-hover:-rotate-180" />
-                      {row.loopsBack.title}
-                    </div>
-                    <p className="m-0 text-[14px] leading-[1.55] text-ink-2">{row.loopsBack.body}</p>
-                  </Link>
-                </Reveal>
-              ) : null}
-            </div>
-          </section>
-        ))}
 
-        <Reveal className="mt-auto">
-          <div className="flex flex-wrap items-center gap-x-[22px] gap-y-2 rounded-[16px] border border-border bg-white px-6 py-[18px] text-[14px] text-ink-2 shadow-card">
-            <div className="flex items-center gap-[10px] font-bold text-ink">
-              <Icon name="shieldCheck" size={22} color="#0B7285" />
-              Shared, compliant layer
+        <div className="grid grid-cols-6 gap-4 max-[900px]:grid-cols-1">
+          <Feature className="col-span-4 max-[900px]:col-span-1" eyebrow="Diagnostics swarm" title="Every X-ray gets a panel, not a single opinion" body="Specialist agents each read the image. A skeptic challenges what they find, and a consensus agent explains each finding by tooth number.">
+            <div className="w-full overflow-x-auto [scrollbar-width:none]">
+              <SwarmVisual agents={swarmNames} />
             </div>
-            {COMPLIANCE_ITEMS.map((t, i) => (
-              <span key={t} className="contents">
-                {i > 0 ? <span style={{ color: "#A7B4C6" }}>·</span> : null}
-                <span>{t}</span>
-              </span>
+          </Feature>
+          <Feature className="col-span-2 max-[900px]:col-span-1" delay={80} eyebrow="Intake" title="Cards and records, read for you" body="OCR fills in the fields. Staff only confirm what's marked low-confidence.">
+            <IntakeVisual />
+          </Feature>
+          <Feature className="col-span-2 max-[900px]:col-span-1" eyebrow="Calendar builder" title="A full day, already booked" body="Long cases in the morning, one emergency slot held, checkups fill the gaps.">
+            <CalendarVisual />
+          </Feature>
+          <Feature className="col-span-2 max-[900px]:col-span-1" delay={80} eyebrow="Insurance swarm" title="One agent per question" body="Eligibility, copays, dual coverage and pre-approvals, retried until they clear.">
+            <InsuranceVisual />
+          </Feature>
+          <Feature className="col-span-2 max-[900px]:col-span-1" delay={160} eyebrow="Follow-up" title="Patients come back" body="A personal email and a short video for their procedure, 24 hours after the visit.">
+            <FollowupVisual />
+          </Feature>
+        </div>
+      </section>
+
+      {/* Workflow */}
+      <section id="workflow" className="scroll-mt-16 border-t border-lp-line bg-lp-surface">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-16 px-6 py-28 max-[900px]:grid-cols-1 max-[900px]:gap-8 max-[640px]:px-4 max-[640px]:py-16">
+          <div>
+            <Reveal className="sticky top-28 flex flex-col gap-4">
+              <span className="text-[13px] font-medium text-lp-accent">How it works</span>
+              <h2 className="m-0 text-[44px] font-semibold leading-[1.06] tracking-[-0.04em] text-lp-ink max-[640px]:text-[32px]">How a patient moves through your practice.</h2>
+              <p className="m-0 text-[16px] leading-[1.6] text-lp-muted">Seven steps, one record. Each step hands the next exactly what it needs, and each opens in the live demo.</p>
+              <div className="mt-2 flex flex-col gap-2 text-[13px] text-lp-muted">
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-lp-accent" /> Agent swarm
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-lp-ink" /> Single model call or rules
+                </span>
+              </div>
+              {loop ? (
+                <Link href={loop.href} className="group mt-6 flex items-start gap-3 rounded-xl border border-dashed border-lp-line-strong p-4 no-underline transition-colors hover:border-lp-accent max-[900px]:hidden">
+                  <Icon name="loop" size={18} color="#0B7285" className="mt-[2px] flex-none transition-transform duration-700 group-hover:-rotate-180" />
+                  <span className="flex flex-col gap-1">
+                    <span className="text-[14px] font-medium text-lp-ink">{loop.title}</span>
+                    <span className="text-[13px] leading-[1.55] text-lp-muted">{loop.body}</span>
+                  </span>
+                </Link>
+              ) : null}
+            </Reveal>
+          </div>
+          <Workflow steps={steps} />
+        </div>
+      </section>
+
+      {/* Security */}
+      <section id="security" className="lp-dark scroll-mt-16 relative overflow-hidden">
+        <div className="lp-dark-wash pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1200px] px-6 py-28 max-[640px]:px-4 max-[640px]:py-16">
+          <Reveal className="flex max-w-[760px] flex-col gap-4">
+            <span className="text-[13px] font-medium text-[#7DD3E0]">Security and oversight</span>
+            <h2 className="m-0 text-[48px] font-semibold leading-[1.05] tracking-[-0.04em] text-white max-[640px]:text-[34px]">
+              Built for clinical accountability, <span className="text-white/45">not around it.</span>
+            </h2>
+          </Reveal>
+          <div className="mt-16 grid grid-cols-4 gap-10 max-[900px]:grid-cols-2 max-[560px]:grid-cols-1">
+            {security.map((s, i) => (
+              <Reveal key={s.title} delay={i * 90} className="flex flex-col gap-3 border-t border-white/10 pt-6">
+                <Icon name={s.icon} size={20} color="#7DD3E0" />
+                <h3 className="m-0 text-[16px] font-semibold text-white">{s.title}</h3>
+                <p className="m-0 text-[14px] leading-[1.6] text-white/55">{s.body}</p>
+              </Reveal>
             ))}
           </div>
-        </Reveal>
-      </div>
+          <Reveal className="mt-16 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/10 pt-8 text-[13px] text-white/45">
+            {COMPLIANCE_ITEMS.map((t) => (
+              <span key={t} className="flex items-center gap-2">
+                <Icon name="check" size={14} color="#38BDCF" />
+                {t}
+              </span>
+            ))}
+          </Reveal>
+        </div>
+      </section>
 
-      <footer className="border-t border-border bg-white">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-16 py-5 text-[12px] text-muted max-[800px]:px-5">
-          <span>HouseAI Dental · Clinical AI for dental practices</span>
-          <span>Powered by HouseAI · Decision support only; the dentist confirms every finding.</span>
+      {/* CTA */}
+      <section className="relative overflow-hidden">
+        <div className="lp-cta-wash pointer-events-none absolute inset-0" aria-hidden="true" />
+        <Reveal className="relative mx-auto flex max-w-[1200px] flex-col items-center gap-6 px-6 py-32 text-center max-[640px]:px-4 max-[640px]:py-20">
+          <h2 className="m-0 max-w-[760px] text-[56px] font-semibold leading-[1.04] tracking-[-0.045em] text-lp-ink max-[640px]:text-[36px]">Your next clinic day, already handled.</h2>
+          <p className="m-0 max-w-[520px] text-[17px] leading-[1.6] text-lp-muted">Walk through a full clinic day in the demo: the swarm&apos;s read, the booked schedule, insurance in flight and follow-ups ready to send.</p>
+          <div className="mt-2 flex flex-wrap justify-center gap-3">
+            <Link href={DEFAULT_ROUTES.diagnostics} className="lp-btn lp-btn-dark h-11 px-5 text-[15px]">
+              Open the live demo
+              <span className="lp-btn-arrow" aria-hidden="true">→</span>
+            </Link>
+            <Link href="/schedule" className="lp-btn lp-btn-ghost h-11 px-5 text-[15px]">
+              View the schedule
+            </Link>
+          </div>
+        </Reveal>
+      </section>
+
+      <footer className="border-t border-lp-line">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap items-start justify-between gap-10 px-6 py-12 max-[640px]:px-4">
+          <div className="flex max-w-[300px] flex-col gap-3">
+            <span className="flex items-center gap-[10px]">
+              <LogoTile size={24} radius={7} glyph={14} />
+              <span className="text-[14px] font-semibold text-lp-ink">HouseAI</span>
+            </span>
+            <span className="text-[13px] leading-[1.6] text-lp-faint">Clinical AI for dental practices. Decision support only; the dentist confirms every finding.</span>
+          </div>
+          <div className="flex gap-16 text-[13px] max-[480px]:gap-10">
+            <div className="flex flex-col gap-3">
+              <span className="font-medium text-lp-ink">Product</span>
+              {items.filter((i) => i.key !== "flow").map((i) => (
+                <Link key={i.key} href={i.href} className="text-lp-muted no-underline hover:text-lp-ink">
+                  {i.label}
+                </Link>
+              ))}
+            </div>
+            <div className="flex flex-col gap-3">
+              <span className="font-medium text-lp-ink">Company</span>
+              <a href="#security" className="text-lp-muted no-underline hover:text-lp-ink">Security</a>
+              <a href="#workflow" className="text-lp-muted no-underline hover:text-lp-ink">How it works</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

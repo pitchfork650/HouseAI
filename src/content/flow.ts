@@ -38,6 +38,7 @@ export const FLOW_ROWS: { eyebrow: string; steps: FlowStep[]; loopsBack?: { titl
 export const COMPLIANCE_ITEMS = [
   "One patient record",
   "Audit log of every agent decision",
+  "SOC 2 compliant",
   "GDPR: consent, data minimization, EU residency, erasure",
   "Dentist signs off on every finding",
 ];

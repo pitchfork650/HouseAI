@@ -60,7 +60,7 @@ export function Sidebar({ items, host }: { items: NavItem[]; host: HostChip }) {
       <div className="flex flex-col gap-[6px] rounded-[12px] bg-navy-2 p-[14px] text-[12px] leading-[1.45]">
         <div className="flex items-center gap-2 text-[13px] font-bold text-white">
           <Icon name="shield" size={16} color="#7DD3E0" strokeWidth={2} />
-          GDPR compliant
+          SOC 2 · GDPR compliant
         </div>
         <span>EU data residency · audit log on · encrypted at rest</span>
       </div>

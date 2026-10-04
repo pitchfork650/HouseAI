@@ -71,7 +71,7 @@ export default async function LandingPage() {
     { icon: "check", title: "The dentist signs off", body: "Agents suggest. Every clinical finding waits for your dentist before it touches the chart." },
     { icon: "document", title: "Every decision on record", body: "Each agent output and each human approval is written to an audit log you can export." },
     { icon: "swarm", title: "Minimum data to models", body: "Agents see images and the context they need. Never names, never contact details." },
-    { icon: "shieldCheck", title: "GDPR by design", body: "Consent per purpose, EU data residency, data export and erasure built in." },
+    { icon: "shieldCheck", title: "SOC 2 and GDPR", body: "SOC 2 compliant, with consent per purpose, EU data residency, data export and erasure built in." },
   ];
 
   return (

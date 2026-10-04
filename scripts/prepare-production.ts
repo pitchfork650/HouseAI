@@ -15,14 +15,18 @@ function run(script: string) {
 }
 
 async function main() {
-  console.log(`[prepare] storage bucket: ${await ensureBucket()}`);
+  const storage = await ensureBucket();
+  console.log(`[prepare] storage bucket: ${storage}`);
   const patients = await prisma.patient.count();
   if (patients > 0) console.log(`[prepare] database has ${patients} patients; not seeding`);
   else {
     console.log("[prepare] empty database; seeding demo data");
     run("prisma/seed.ts");
   }
-  if (await prisma.patient.findUnique({ where: { id: "CX-01" } })) console.log("[prepare] public demo X-rays present");
+  // Files written during a Vercel build don't reach the server functions, so without
+  // Supabase Storage keys the import would leave studies pointing at missing files.
+  if (storage === "local" && process.env.VERCEL) console.log("[prepare] no Supabase Storage keys; skipping the demo X-ray import");
+  else if (await prisma.patient.findUnique({ where: { id: "CX-01" } })) console.log("[prepare] public demo X-rays present");
   else {
     console.log("[prepare] importing public demo X-rays (Wikimedia Commons)");
     run("scripts/import-commons.ts");

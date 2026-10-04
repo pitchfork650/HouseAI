@@ -107,7 +107,7 @@ export default async function LandingPage() {
           </ScrollTilt>
           <p className="m-0 mt-4 text-center text-[12px] text-lp-faint">
             {imageSrc
-              ? `A real, de-identified panoramic X-ray (DENTEX dataset, CC BY-NC-SA 4.0), read by the agent swarm${run?.agents.find((a) => a.model)?.model ? ` on ${run.agents.find((a) => a.model)!.model}` : ""}. Decision support only.`
+              ? `A real, de-identified X-ray${run?.study?.source ? ` (${run.study.source})` : ""}, read by the agent swarm${run?.agents.find((a) => a.model)?.model ? ` on ${run.agents.find((a) => a.model)!.model}` : ""}. Decision support only.`
               : "Synthetic demo patient. Decision support only."}
           </p>
         </div>

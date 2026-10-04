@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { invokeAgent } from "../host";
+import { agentSpecTimeoutMs, invokeAgent } from "../host";
 import { loadPrompt } from "../../prompts";
 import { hhmm } from "../../clock";
 import type { AgentOutcome, AgentSpec } from "../coordinator";
@@ -31,7 +31,7 @@ export function eligibilityLane(policy: PolicyRef, adapter: CarrierAdapter, fall
   return {
     name: `Eligibility · ${policy.carrier}`,
     scope: `${policy.planName} · ${policy.channel}`,
-    timeoutMs: 120_000,
+    get timeoutMs() { return agentSpecTimeoutMs(120_000); },
     retries: 0,
     async run(input, ctx) {
       const clock = input.clock.fork();
@@ -74,7 +74,7 @@ export function copayLane(policy: PolicyRef, adapter: CarrierAdapter, codes: str
   return {
     name: "Copay Chaser",
     scope: "Coverage % by procedure code",
-    timeoutMs: 120_000,
+    get timeoutMs() { return agentSpecTimeoutMs(120_000); },
     retries: 1,
     async run(input, ctx) {
       const clock = input.clock.fork();
@@ -97,7 +97,7 @@ export function preapprovalLane(
   return {
     name: "Pre-approval Agent",
     scope: `${procedure.title} · attaches X-rays`,
-    timeoutMs: 120_000,
+    get timeoutMs() { return agentSpecTimeoutMs(120_000); },
     retries: 1,
     async run(input, ctx) {
       const clock = input.clock.fork();

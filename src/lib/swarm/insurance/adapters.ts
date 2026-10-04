@@ -1,4 +1,8 @@
+import { z } from "zod";
 import type { Clock } from "../clock";
+import { invokeAgent, swarmHost } from "../host";
+import { loadPrompt } from "../../prompts";
+import { replayOutput } from "../replay";
 
 /**
  * Carrier adapters. Every lane talks to its insurer through one of these; the
@@ -56,11 +60,70 @@ export class MockPhoneLine extends MockPortal {
   constructor(public opensAtHour = 14) { super(); }
 }
 
-export function adaptersFor(carrier: string): { primary: CarrierAdapter; fallback?: MockPhoneLine } {
+export type PolicyInfo = { carrier: string; planName: string; rank: string; memberId?: string; groupNumber?: string };
+
+const EligibilitySchema = z.object({
+  status: z.enum(["ok", "timeout"]),
+  timeoutSec: z.number().optional(),
+  activeSince: z.string().optional(),
+  annualMax: z.string().optional(),
+  used: z.string().optional(),
+});
+const CoverageSchema = z.object({
+  items: z.array(z.object({ code: z.string(), label: z.string(), pct: z.number().min(0).max(1), note: z.string().optional() })),
+  waitingPeriod: z.string(),
+});
+const PreapprovalSchema = z.object({ ref: z.string() });
+
+/** Carrier work done by OpenSwarm agents on the host, through the SwarmHost interface. */
+export class HostCarrierAdapter implements CarrierAdapter {
+  private elig: Eligibility | null = null;
+  constructor(private policy: PolicyInfo, public channel: "portal" | "phone" = "portal") {}
+
+  private call<T>(slug: string, schema: z.ZodType<T>, context: Record<string, unknown>) {
+    const prompt = loadPrompt(slug);
+    return invokeAgent({
+      name: `${slug} · ${this.policy.carrier}`,
+      slug,
+      version: prompt.version,
+      prompt: prompt.text,
+      schema,
+      context: { carrier: this.policy.carrier, planName: this.policy.planName, rank: this.policy.rank, memberId: this.policy.memberId, groupNumber: this.policy.groupNumber, channel: this.channel, ...context },
+      mock: () => replayOutput(slug, { carrier: this.policy.carrier, channel: this.channel, ...context }) as T,
+    });
+  }
+
+  async login() {
+    const r = await this.call("carrier-eligibility", EligibilitySchema, {});
+    if (r.data.status === "timeout") throw new PortalTimeoutError(r.data.timeoutSec ?? 30);
+    this.elig = { active: true, activeSince: r.data.activeSince ?? "[DATE]", annualMax: r.data.annualMax ?? "[$]", used: r.data.used ?? "[$]" };
+  }
+  async eligibility() {
+    if (!this.elig) await this.login();
+    return this.elig!;
+  }
+  async coverage(_clock: Clock, codes: string[]) {
+    return (await this.call("carrier-coverage", CoverageSchema, { codes })).data;
+  }
+  async submitPreapproval(_clock: Clock, packet: { narrative: string; attachments: string[] }) {
+    return (await this.call("carrier-preapproval", PreapprovalSchema, { narrative: packet.narrative, attachments: packet.attachments })).data;
+  }
+}
+
+/** Mock adapters by default; OpenSwarm agents when the real host is configured. */
+export function adaptersFor(policy: PolicyInfo): { primary: CarrierAdapter; fallback?: MockPhoneLine } {
+  if (swarmHost().kind === "openswarm") {
+    return { primary: new HostCarrierAdapter(policy, "portal"), fallback: new MockPhoneLine(14) };
+  }
   const simulateTimeout = process.env.MOCK_CARRIER_B_TIMEOUT !== "false";
-  if (carrier === "Carrier B" && simulateTimeout) return { primary: new TimingOutPortal(30), fallback: new MockPhoneLine(14) };
+  if (policy.carrier === "Carrier B" && simulateTimeout) return { primary: new TimingOutPortal(30), fallback: new MockPhoneLine(14) };
   return {
     primary: new MockPortal({ D2740: { pct: 0.5 }, D6010: { pct: 0.5, note: "after pre-approval" } }),
     fallback: new MockPhoneLine(14),
   };
+}
+
+/** Adapter for a scheduled phone-line retry. */
+export function phoneAdapterFor(policy: PolicyInfo): CarrierAdapter {
+  return swarmHost().kind === "openswarm" ? new HostCarrierAdapter(policy, "phone") : new MockPhoneLine(14);
 }

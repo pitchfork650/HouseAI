@@ -4,7 +4,7 @@ import { now as clinicNow } from "../../clock";
 import { registerAgents, runAgent, runPhase, type AgentOutcome, type AgentSpec } from "../coordinator";
 import { PrismaRunStore } from "../prisma-store";
 import { RealClock, type Clock } from "../clock";
-import { adaptersFor, MockPhoneLine } from "./adapters";
+import { adaptersFor, phoneAdapterFor, type PolicyInfo } from "./adapters";
 import { copayLane, eligibilityLane, explainRun, preapprovalLane, type CopayOutput, type LaneInput, type PolicyRef } from "./lanes";
 import { costSplit } from "./cost";
 
@@ -27,6 +27,10 @@ export async function startInsuranceRun(patientId: string, opts: Opts = {}): Pro
   await audit({ actor: opts.actor ?? "user:staff", action: "swarm.insurance.start", entity: "SwarmRun", entityId: run.id, inputs: { patientId } });
 
   const store = new PrismaRunStore(run.id, { patientId, policies: patient.policies.map((p) => p.id) });
+  const info = (carrier: string): PolicyInfo => {
+    const p = patient.policies.find((x) => x.carrier === carrier)!;
+    return { carrier: p.carrier, planName: p.planName, rank: p.rank, memberId: p.memberId, groupNumber: p.groupNumber };
+  };
   const policies: PolicyRef[] = patient.policies
     .sort((a, b) => (a.rank === "primary" ? -1 : 1) - (b.rank === "primary" ? -1 : 1))
     .map((p) => ({ id: p.id, carrier: p.carrier, planName: p.planName, rank: p.rank as PolicyRef["rank"], channel: "portal" }));
@@ -46,18 +50,18 @@ export async function startInsuranceRun(patientId: string, opts: Opts = {}): Pro
 
   const lanes: AgentSpec<LaneInput, unknown>[] = [
     ...policies.map((p) => {
-      const a = adaptersFor(p.carrier);
+      const a = adaptersFor(info(p.carrier));
       return eligibilityLane(p, a.primary, a.fallback) as AgentSpec<LaneInput, unknown>;
     }),
-    ...(primary ? [copayLane(primary, adaptersFor(primary.carrier).primary, codes) as AgentSpec<LaneInput, unknown>] : []),
+    ...(primary ? [copayLane(primary, adaptersFor(info(primary.carrier)).primary, codes) as AgentSpec<LaneInput, unknown>] : []),
     ...(procedure && primary
-      ? [preapprovalLane({ code: procedure.cdtCode, title: procedure.title, teeth: procedure.teeth as number[] }, findingText, studyTypes, adaptersFor(primary.carrier).primary) as AgentSpec<LaneInput, unknown>]
+      ? [preapprovalLane({ code: procedure.cdtCode, title: procedure.title, teeth: procedure.teeth as number[] }, findingText, studyTypes, adaptersFor(info(primary.carrier)).primary) as AgentSpec<LaneInput, unknown>]
       : []),
   ];
 
   const [coordId] = await registerAgents(store, [{ ...COORDINATOR, run: async () => ({ status: "done", badge: "", result: "" }) }]);
   const ids = await registerAgents(store, lanes, 1);
-  const input: LaneInput = { clock, forceMock: true };
+  const input: LaneInput = { clock, forceMock: false };
 
   const work = execute(run.id, store, coordId, ids, lanes, input, policies, procedure?.cdtCode ?? null, procedure?.teeth as number[] | undefined).catch(async (e) => {
     console.error("[swarm] insurance run failed", e);
@@ -187,7 +191,7 @@ export async function processDueLaneRetries(at: Date = clinicNow()): Promise<num
     const store = new PrismaRunStore(lane.runId, { patientId: lane.run.patientId, retryOf: lane.id });
     const prevLog = lane.log as { t: string; text: string }[];
     const clock = new RealClock(undefined, clinicNow);
-    const outcome = await runAgent(store, lane.id, eligibilityLane(ref, new MockPhoneLine(14)), { clock, forceMock: true });
+    const outcome = await runAgent(store, lane.id, eligibilityLane(ref, phoneAdapterFor({ carrier: policy.carrier, planName: policy.planName, rank: policy.rank, memberId: policy.memberId, groupNumber: policy.groupNumber })), { clock, forceMock: false });
     const row = await prisma.agentRun.findUniqueOrThrow({ where: { id: lane.id } });
     await prisma.agentRun.update({ where: { id: lane.id }, data: { log: [...prevLog, ...(row.log as { t: string; text: string }[])], scope: `${policy.planName} · phone` } });
 

@@ -218,3 +218,25 @@ export function overlayFor(tooth: number, style: "box-below" | "box-above" | "ap
     }
   }
 }
+
+/** Standalone SVG markup of the synthetic panoramic (sent to the host for seed studies). */
+export function panoSvg(): string {
+  const g = panoGeometry();
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+<defs><radialGradient id="g" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#26303C"/><stop offset="100%" stop-color="#05090F"/></radialGradient></defs>
+<rect width="800" height="400" fill="url(#g)"/>
+<ellipse cx="${g.sinusL.cx}" cy="${g.sinusL.cy}" rx="58" ry="30" fill="#080D14" opacity="0.8"/>
+<ellipse cx="${g.sinusR.cx}" cy="${g.sinusR.cy}" rx="58" ry="30" fill="#080D14" opacity="0.8"/>
+<path d="M60 175 Q400 150 740 175 L700 40 Q400 10 100 40 Z" fill="#3A4656" opacity="0.35"/>
+<path d="M40 110 L62 300 Q120 372 400 388 Q680 372 738 300 L760 110 L720 110 L705 215 Q400 250 95 215 L80 110 Z" fill="#3A4656" opacity="0.45"/>
+<path d="M95 215 Q400 250 705 215 L700 300 Q400 340 100 300 Z" fill="#3A4656" opacity="0.35"/>
+<path d="${g.faint}" fill="#B8C3CF" opacity="0.18"/>
+<path d="${g.teeth}" fill="#AEB9C6" opacity="0.62"/>
+<path d="${g.enamel}" fill="#E6ECF2" opacity="0.55"/>
+<path d="${g.pulp}" fill="#141B25" opacity="0.75"/>
+<path d="${g.canals}" stroke="#141B25" stroke-width="1.6" fill="none" opacity="0.75"/>
+<path d="${g.resto}" fill="#F7FAFC"/>
+<path d="${g.caries}" fill="#05090F" opacity="0.85"/>
+<path d="${g.lesion}" fill="#05090F" opacity="0.6"/>
+</svg>`;
+}

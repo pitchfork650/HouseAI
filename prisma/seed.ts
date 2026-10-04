@@ -12,6 +12,7 @@ import { computeReminderTime, computeSendTime, formatLength, generateEmail, rend
 
 process.env.MOCK_LATENCY_MS = "0";
 process.env.GEMINI_API_KEY = ""; // the seed never calls a model
+process.env.SWARM_HOST = "mock"; // seed runs replay the sample swarm runs
 
 const prisma = new PrismaClient();
 const DAY = "2026-10-06";

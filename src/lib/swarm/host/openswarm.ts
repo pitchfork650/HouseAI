@@ -1,34 +1,111 @@
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import type { ImagePart } from "../../llm";
 import type { AgentDefinition, HostResult, HostStatus, SwarmHost } from "./index";
 
 /**
  * The OpenSwarm host: a separate device running OpenSwarm, reached through the team's
- * MCP server over HTTPS or a private tunnel (Tailscale / Cloudflare Tunnel).
- *
- * NOT IMPLEMENTED YET on purpose: the MCP's transport, tool names and auth haven't
- * been shared, and we don't guess the API. invoke() fails loudly so a misconfigured
- * deployment never silently falls back to fake results.
+ * MCP server (see docs/openswarm-mcp-contract.md) over HTTPS or a private tunnel.
  */
 export class OpenSwarmHost implements SwarmHost {
   kind = "openswarm" as const;
+  private cached: { at: number; status: HostStatus } | null = null;
+
   constructor(private baseUrl: URL, private token: string) {}
 
-  async invoke(def: AgentDefinition): Promise<HostResult> {
-    throw new Error(`OpenSwarm connector not built yet (agent ${def.slug} ${def.version}). Set SWARM_HOST=mock until the MCP details are wired in.`);
+  private endpoint(): URL {
+    const u = new URL(this.baseUrl);
+    if (!u.pathname.endsWith("/mcp")) u.pathname = u.pathname.replace(/\/$/, "") + "/mcp";
+    return u;
   }
 
-  /** Read-only reachability check. Says nothing about the API until the connector exists. */
-  async status(): Promise<HostStatus> {
+  private async withClient<T>(fn: (c: Client) => Promise<T>): Promise<T> {
+    const transport = new StreamableHTTPClientTransport(this.endpoint(), {
+      requestInit: { headers: this.token ? { authorization: `Bearer ${this.token}` } : {} },
+    });
+    const client = new Client({ name: "houseai-dental", version: "0.1.0" });
+    await client.connect(transport);
     try {
-      const res = await fetch(this.baseUrl, {
-        method: "GET",
-        headers: this.token ? { authorization: `Bearer ${this.token}` } : {},
-        signal: AbortSignal.timeout(3000),
-        cache: "no-store",
-      });
-      return { kind: "openswarm", connected: false, label: "Host reachable", detail: `HTTP ${res.status}; connector pending` };
-    } catch {
-      return { kind: "openswarm", connected: false, label: "Host offline", detail: `Can't reach ${this.baseUrl.host}` };
+      return await fn(client);
+    } finally {
+      await client.close().catch(() => {});
     }
+  }
+
+  async invoke(def: AgentDefinition, req: { context: Record<string, unknown>; images?: ImagePart[]; signal?: AbortSignal; runId?: string }): Promise<HostResult> {
+    const timeoutMs = agentTimeoutMs();
+    const res = await this.withClient((c) =>
+      c.callTool(
+        {
+          name: "run_agent",
+          arguments: {
+            runId: req.runId ?? "",
+            agent: def,
+            context: req.context,
+            images: (req.images ?? []).map((i) => ({ mimeType: i.mimeType, dataBase64: i.data.toString("base64") })),
+            timeoutMs,
+          },
+        },
+        undefined,
+        { timeout: timeoutMs, signal: req.signal },
+      ),
+    );
+    const body = toolJSON(res) as { output?: unknown; model?: string };
+    if (res.isError) throw new Error(`OpenSwarm ${def.slug}: ${textOf(res) || "agent failed"}`);
+    if (!body || typeof body !== "object" || !("output" in body)) throw new Error(`OpenSwarm ${def.slug}: response has no "output"`);
+    return { data: body.output, model: body.model ?? "openswarm" };
+  }
+
+  /** Read-only health check through the MCP `health` tool. Cached for 20 s. */
+  async status(): Promise<HostStatus> {
+    if (this.cached && Date.now() - this.cached.at < 20_000) return this.cached.status;
+    let status: HostStatus;
+    try {
+      const res = await this.withClient((c) => c.callTool({ name: "health", arguments: {} }, undefined, { timeout: 4000 }));
+      const h = toolJSON(res) as { ok?: boolean; openswarm?: { running?: boolean; signedIn?: boolean }; host?: string };
+      const ready = !!(h?.ok && h.openswarm?.running && h.openswarm?.signedIn);
+      status = {
+        kind: "openswarm",
+        connected: ready,
+        label: ready ? "Host connected" : "Host not ready",
+        detail: ready ? `OpenSwarm on ${h.host ?? this.baseUrl.host}` : "MCP reachable but OpenSwarm isn't running or signed in",
+      };
+    } catch (e) {
+      status = { kind: "openswarm", connected: false, label: "Host offline", detail: `Can't reach ${this.baseUrl.host}: ${e instanceof Error ? e.message : e}` };
+    }
+    this.cached = { at: Date.now(), status };
+    return status;
+  }
+
+  /** Read-only look around: list tools and call health. Used by `npm run host:probe`. */
+  async probe() {
+    return this.withClient(async (c) => {
+      const tools = await c.listTools();
+      const health = await c.callTool({ name: "health", arguments: {} }, undefined, { timeout: 5000 }).then(toolJSON, (e) => ({ error: String(e) }));
+      return { server: c.getServerVersion(), tools: tools.tools.map((t) => ({ name: t.name, description: t.description })), health };
+    });
+  }
+}
+
+export function agentTimeoutMs(): number {
+  return Number(process.env.OPENSWARM_AGENT_TIMEOUT_MS ?? 180_000);
+}
+
+type ToolResult = { [key: string]: unknown };
+
+function textOf(res: ToolResult): string {
+  const content = Array.isArray(res.content) ? (res.content as { type: string; text?: string }[]) : [];
+  return content.filter((c) => c.type === "text").map((c) => c.text ?? "").join("\n");
+}
+
+/** Contract: JSON in `structuredContent`, or one text content item holding JSON. */
+export function toolJSON(res: ToolResult): unknown {
+  if (res.structuredContent && typeof res.structuredContent === "object") return res.structuredContent;
+  const text = textOf(res);
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
   }
 }
 

@@ -2,6 +2,22 @@
 
 HouseAI is an intelligent multi-agent platform designed specifically for cosmetic and restorative dentists. It combines an autonomous 5-agent dental clinical swarm, multimodal X-ray and photo evaluation via Google Gemini Pro, raw text wall and insurance parsing, and an urgency-colored dental calendar.
 
+
+## HouseAI Dental web app (Next.js)
+
+The clinic web app (Flow, Diagnostics, Schedule, Insurance, Follow-ups) lives at the repo root: `src/`, `prisma/`, `agents/`.
+
+```bash
+npm install
+npm run setup     # create the SQLite DB and seed the sample clinic
+npm run dev       # http://localhost:3000 (binds 0.0.0.0 for Codespaces)
+npm test
+```
+
+It runs end to end with zero credentials: with no `GEMINI_API_KEY` and `SWARM_HOST=mock`, every model and swarm call replays the sample data. See `.env.example`.
+
+**Swarms run on OpenSwarm on a separate host device** (the Windows host laptop), reached through an MCP server over HTTPS or a private tunnel. Agent prompts and output formats stay in `agents/` and are sent with every run. The contract is in [`docs/openswarm-mcp-contract.md`](docs/openswarm-mcp-contract.md), and a reference host server is in `host/server.ts` (`npm run host:dev`). The sidebar chip shows the host status: green when connected, amber when offline or on the mock.
+
 ---
 
 ## Architecture: The 5-Agent Dental Swarm

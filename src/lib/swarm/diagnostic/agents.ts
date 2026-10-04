@@ -1,5 +1,5 @@
 import type { ImagePart } from "../../llm";
-import { invokeAgent } from "../host";
+import { agentSpecTimeoutMs, invokeAgent } from "../host";
 import { loadPrompt } from "../../prompts";
 import type { AgentOutcome, AgentSpec } from "../coordinator";
 import { RULES, type Condition } from "../../rules/prioritize";
@@ -21,6 +21,7 @@ export type DiagnosticInput = {
   studies: StudyInput[];
   context: { ageYears: number | null };
   forceMock: boolean;
+  runId?: string;
 };
 
 export type ReviewInput = DiagnosticInput & { candidates: Candidate[] };
@@ -59,7 +60,7 @@ export function specialistSpec(def: SpecialistDef): AgentSpec<DiagnosticInput, S
   return {
     name: def.name,
     scope: def.scope,
-    timeoutMs: 90_000,
+    get timeoutMs() { return agentSpecTimeoutMs(90_000); },
     retries: 1,
     skip: (input) => (imagesFor(input, def.needs).length ? null : SKIP_REASONS[def.name] ?? `No ${def.needs[0]} image uploaded. Nothing else was affected.`),
     async run(input, ctx) {
@@ -76,6 +77,7 @@ export function specialistSpec(def: SpecialistDef): AgentSpec<DiagnosticInput, S
         schema: SpecialistOutputSchema,
         mock: MOCK_SPECIALISTS[def.name],
         forceMock: input.forceMock,
+        runId: input.runId,
         signal: ctx.signal,
       });
       ctx.log(`${res.data.findings.length} finding(s)`);
@@ -87,7 +89,7 @@ export function specialistSpec(def: SpecialistDef): AgentSpec<DiagnosticInput, S
 export const verifierSpec: AgentSpec<ReviewInput, VerifierOutput> = {
   name: "Verifier",
   scope: "Independently re-reads every finding",
-  timeoutMs: 90_000,
+  get timeoutMs() { return agentSpecTimeoutMs(90_000); },
   retries: 1,
   skip: (input) => (input.candidates.length ? null : "No findings to verify."),
   async run(input, ctx) {
@@ -103,6 +105,7 @@ export const verifierSpec: AgentSpec<ReviewInput, VerifierOutput> = {
       schema: VerifierOutputSchema,
       mock: () => mockVerifier(input.candidates),
       forceMock: input.forceMock,
+      runId: input.runId,
       signal: ctx.signal,
     });
     const n = res.data.results.filter((r) => r.confirmed).length;
@@ -113,7 +116,7 @@ export const verifierSpec: AgentSpec<ReviewInput, VerifierOutput> = {
 export const skepticSpec: AgentSpec<ReviewInput, SkepticOutput> = {
   name: "Skeptic",
   scope: "Challenges every finding",
-  timeoutMs: 90_000,
+  get timeoutMs() { return agentSpecTimeoutMs(90_000); },
   retries: 1,
   skip: (input) => (input.candidates.length ? null : "No findings to challenge."),
   async run(input, ctx) {
@@ -129,6 +132,7 @@ export const skepticSpec: AgentSpec<ReviewInput, SkepticOutput> = {
       schema: SkepticOutputSchema,
       mock: () => mockSkeptic(input.candidates),
       forceMock: input.forceMock,
+      runId: input.runId,
       signal: ctx.signal,
     });
     const n = res.data.challenges.length;

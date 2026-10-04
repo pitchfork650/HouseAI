@@ -2,9 +2,10 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db";
 import { audit } from "../../audit";
 import { assertMayUseModel } from "../../llm";
-import { invokeAgent } from "../host";
+import { invokeAgent, swarmHost } from "../host";
 import { loadPrompt } from "../../prompts";
 import { readFile } from "../../storage";
+import { panoSvg } from "../../pano";
 import { registerAgents, runPhase, type AgentSpec } from "../coordinator";
 import { PrismaRunStore } from "../prisma-store";
 import { AGENT_ORDER, SKIP_PHRASES, SPECIALISTS, collectCandidates, skepticSpec, specialistSpec, verifierSpec, type DiagnosticInput, type ReviewInput } from "./agents";
@@ -42,12 +43,18 @@ export async function startDiagnosticRun(patientId: string, opts: { actor?: stri
   const studies: DiagnosticInput["studies"] = [];
   for (const s of visit) {
     if (s.fileUrl?.startsWith("storage:") && s.mimeType) studies.push({ type: s.type, image: { mimeType: s.mimeType, data: await readFile(s.fileUrl) } });
+    // Seed studies are generated: send the panoramic as SVG so the host has something to read.
+    else if (s.type === "pano") studies.push({ type: s.type, image: { mimeType: "image/svg+xml", data: Buffer.from(panoSvg()) } });
     else studies.push({ type: s.type });
   }
   if (!synthetic) assertMayUseModel(patient);
+  if (!patient.synthetic && process.env.NODE_ENV !== "production" && swarmHost().kind === "openswarm") {
+    throw new Error("Refusing to send non-synthetic patient data to the swarm host outside production.");
+  }
 
   // Minimum context only: images, age, numbering system. No name, DOB or contact details.
-  const input: DiagnosticInput = { studies, context: { ageYears: patient.ageYears }, forceMock: synthetic };
+  // Synthetic studies are fine to send to the swarm host (no real patient data).
+  const input: DiagnosticInput = { studies, context: { ageYears: patient.ageYears }, forceMock: false, runId: run.id };
   const store = new PrismaRunStore(run.id, { studies: visit.map((s) => s.id), ageYears: patient.ageYears });
 
   const specialistSpecs = SPECIALISTS.map(specialistSpec);

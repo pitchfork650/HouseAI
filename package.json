@@ -12,10 +12,13 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset --skip-generate && tsx prisma/seed.ts",
     "setup": "prisma generate && prisma db push --skip-generate && tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "host:dev": "tsx host/server.ts",
+    "host:probe": "tsx --env-file-if-exists=.env scripts/host-probe.ts"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "@prisma/client": "^6.19.3",
     "next": "^16.3.8",
     "react": "^19.3.0",

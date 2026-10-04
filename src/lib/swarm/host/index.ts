@@ -2,7 +2,7 @@ import { z, type ZodType } from "zod";
 import type { ImagePart } from "../../llm";
 import { audit, hash } from "../../audit";
 import { MockSwarmHost } from "./mock";
-import { OpenSwarmHost, validateHostUrl } from "./openswarm";
+import { OpenSwarmHost, agentTimeoutMs, validateHostUrl } from "./openswarm";
 
 /**
  * Every swarm agent call goes through a SwarmHost. Two versions:
@@ -53,6 +53,11 @@ export function swarmHost(): SwarmHost {
   if (process.env.SWARM_HOST !== "openswarm" || !process.env.OPENSWARM_HOST_URL) return mockHost;
   if (!realHost) realHost = new OpenSwarmHost(validateHostUrl(process.env.OPENSWARM_HOST_URL), process.env.OPENSWARM_TOKEN ?? "");
   return realHost;
+}
+
+/** Per-agent timeout for the coordinator: the host's own timeout plus headroom. */
+export function agentSpecTimeoutMs(localDefault = 90_000): number {
+  return swarmHost().kind === "openswarm" ? agentTimeoutMs() + 15_000 : localDefault;
 }
 
 /** Fields that must never reach the host. */

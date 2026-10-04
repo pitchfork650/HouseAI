@@ -192,6 +192,7 @@ model ScheduleRequest {
   status        String   @default("pending") // pending | placed | blocked
   blocker       String?
   appointmentId String?
+  treatmentItemId String?
   createdAt     DateTime @default(now())
 }
 

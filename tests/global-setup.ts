@@ -1,8 +1,17 @@
 import { execSync } from "node:child_process";
-import fs from "node:fs";
+import { PrismaClient } from "@prisma/client";
+import { testDatabaseUrl } from "./test-db";
 
-/** Tests use their own throwaway SQLite file so they never touch the dev database. */
-export default function setup() {
-  for (const f of ["prisma/test.db", "prisma/test.db-journal"]) fs.rmSync(f, { force: true });
-  execSync("npx prisma db push --skip-generate", { env: { ...process.env, DATABASE_URL: "file:./test.db" }, stdio: "ignore" });
+/** Sync the schema into the test schema, then empty its tables so every run starts clean. */
+export default async function setup() {
+  const url = testDatabaseUrl();
+  execSync("npx prisma db push --skip-generate", { env: { ...process.env, DATABASE_URL: url, DIRECT_URL: url }, stdio: "ignore" });
+  const schema = new URL(url).searchParams.get("schema")!;
+  const prisma = new PrismaClient({ datasourceUrl: url });
+  try {
+    const rows = await prisma.$queryRaw<{ tablename: string }[]>`SELECT tablename FROM pg_tables WHERE schemaname = ${schema}`;
+    if (rows.length) await prisma.$executeRawUnsafe(`TRUNCATE ${rows.map((r) => `"${schema}"."${r.tablename}"`).join(", ")} CASCADE`);
+  } finally {
+    await prisma.$disconnect();
+  }
 }

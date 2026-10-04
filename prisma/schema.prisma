@@ -1,7 +1,6 @@
 // HouseAI Dental data model.
-// SQLite in dev and tests; Postgres (Supabase) in production. Kept compatible with
-// both (no SQLite-only types). scripts/prisma.mjs derives the Postgres schema when
-// DATABASE_URL is a postgres:// URL; always run Prisma through it (npm run db:push etc.).
+// Postgres (Supabase) everywhere: dev, tests and production. DATABASE_URL is the
+// pooled connection for the app; DIRECT_URL is the session connection for schema changes.
 // Times of day are stored as clinic wall-clock values: `date` strings (YYYY-MM-DD)
 // plus minutes from midnight for appointments, and DateTime values read in UTC.
 
@@ -10,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Patient {

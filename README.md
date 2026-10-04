@@ -8,15 +8,16 @@ The clinic web app (Flow, Diagnostics, Schedule, Insurance, Follow-ups) lives at
 
 ```bash
 npm install
-npm run setup     # create the SQLite DB and seed the sample clinic
+cp .env.example .env   # fill in DATABASE_URL, DIRECT_URL, TEST_DATABASE_URL (Supabase)
+npm run setup     # push the schema and seed the sample clinic
 npm run dev       # http://localhost:3000 (binds 0.0.0.0 for Codespaces)
 npm test          # Vitest
 npm run lint      # tsc --noEmit
 ```
 
-It runs end to end with zero credentials: with no `GEMINI_API_KEY` and `SWARM_HOST=mock`, every model and swarm call replays the sample data. See `.env.example`.
+The only required credentials are the database URLs. With no `GEMINI_API_KEY` and `SWARM_HOST=mock`, every model and swarm call replays the sample data. See `.env.example`.
 
-Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Prisma 6 (SQLite in dev, schema kept Postgres-compatible), Gemini via `@google/genai`, zod 4, Vitest.
+Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Prisma 6 on Postgres (Supabase, also for Storage), Gemini via `@google/genai`, zod 4, Vitest.
 
 ### OpenSwarm host
 

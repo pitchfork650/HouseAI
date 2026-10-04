@@ -25,14 +25,8 @@ node_modules/
 .next/
 next-env.d.ts
 *.tsbuildinfo
-prisma/dev.db
-prisma/dev.db-journal
 storage/
 .env*.local
-prisma/test.db*
 
 # Downloaded datasets (DENTEX)
 .cache/
-
-# Generated Postgres schema (scripts/prisma.mjs)
-prisma/postgres/

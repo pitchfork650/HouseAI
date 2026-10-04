@@ -88,6 +88,29 @@ async function imaging() {
   });
 }
 
+/** The 2025-03 recall run for P-1042: the baseline the current X-rays are compared against. */
+async function earlierDiagnosticRun() {
+  const study = await prisma.imagingStudy.findFirstOrThrow({ where: { patientId: "P-1042", type: "pano", takenAt: { lt: at("2026-01-01T00:00:00Z") } } });
+  const findings = [
+    { teeth: [3], condition: "caries_enamel", text: "Early enamel cavity, not into the dentin yet", cdtCode: "D1206", suggested: "D1206 · 10 min", durationMin: 10, priority: "P4" },
+    { teeth: [12], condition: "caries_enamel", text: "Early enamel cavity, not into the dentin yet", cdtCode: "D1206", suggested: "D1206 · 10 min", durationMin: 10, priority: "P4" },
+    { teeth: [32], condition: "impacted_complete_bony", text: "Impacted wisdom tooth (completely bony), roots on the nerve canal", cdtCode: "D7240", suggested: "D7240 · 60 min (D0367 CBCT first)", durationMin: 60, priority: "P2" },
+    { teeth: [17], condition: "impacted_partial_bony", text: "Impacted wisdom tooth (partially bony)", cdtCode: "D7230", suggested: "D7230 · 45 min", durationMin: 45, priority: "P2" },
+  ];
+  await prisma.swarmRun.create({
+    data: {
+      kind: "diagnostic",
+      patientId: "P-1042",
+      studyId: study.id,
+      status: "done",
+      startedAt: at("2025-03-14T10:10:00Z"),
+      finishedAt: at("2025-03-14T10:10:16Z"),
+      summary: { reported: 6, total: 7, note: "Baseline recall run." },
+      findings: { create: findings.map((f, i) => ({ ...f, order: i, reporter: "seed", agreement: 3, overlay: [], status: "accepted" })) },
+    },
+  });
+}
+
 async function diagnosticRun() {
   const runId = await startDiagnosticRun("P-1042", { actor: "seed", wait: true });
   // Place the seeded run at the time of the X-ray, 14 s long.
@@ -242,6 +265,7 @@ async function main() {
   await reset();
   await patients();
   await imaging();
+  await earlierDiagnosticRun();
   await diagnosticRun();
   await insurance();
   await schedule();

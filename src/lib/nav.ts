@@ -33,6 +33,7 @@ export async function navItems(): Promise<NavItem[]> {
     { key: "diagnostics", label: "Diagnostics", href: DEFAULT_ROUTES.diagnostics, icon: "scanNav", count: findings, countTone: "teal", match: "/diagnostics" },
     { key: "schedule", label: "Schedule", href: "/schedule", icon: "calendar", match: "/schedule" },
     { key: "insurance", label: "Insurance", href: DEFAULT_ROUTES.insurance, icon: "shieldCheck", count: lanes, countTone: "orange", match: "/insurance" },
+    { key: "recall", label: "Recall", href: "/recall/P-1042", icon: "loop", match: "/recall" },
     { key: "intake", label: "Intake", href: "/intake", icon: "upload", match: "/intake" },
     { key: "followups", label: "Follow-ups", href: nextFollowUp ? `/follow-ups/${nextFollowUp.id}` : DEFAULT_ROUTES.followUp, icon: "mail", match: "/follow-ups" },
   ];

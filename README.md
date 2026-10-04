@@ -49,8 +49,8 @@ Build order from the [spec](docs/build-spec.md#7-build-order-commit-after-each-w
 - [x] 5. Schedule screen, auto-fill, CSV import
 - [x] 6. Insurance screen and insurance swarm with independent lanes
 - [x] 7. Follow-up screen, email generation, scheduler, day-12 reminder
-- [ ] 8. Intake (form, CSV, drop zone) and card OCR with per-field confidence
-- [ ] 9. Recall comparison against earlier studies
+- [x] 8. Intake (form, CSV, drop zone) and card OCR with per-field confidence
+- [x] 9. Recall comparison against earlier studies
 
 Also open:
 

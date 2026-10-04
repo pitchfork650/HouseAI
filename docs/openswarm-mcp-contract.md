@@ -6,6 +6,8 @@ on that laptop. This file is the contract between the two. The web app side is
 implemented in `src/lib/swarm/host/openswarm.ts`; a reference server that speaks this
 contract lives in `host/server.ts`.
 
+Setting up the app and host on the same laptop? Follow [`host-laptop-setup.md`](host-laptop-setup.md).
+
 ```
  codespace (web app)  ──HTTPS──▶  Cloudflare Tunnel  ──▶  host laptop: MCP server  ──▶  OpenSwarm
    invokeAgent()                  (or Tailscale)          run_agent / health            (desktop app)

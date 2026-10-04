@@ -1,47 +1,111 @@
-# HouseAI hackathon demo
+# HouseAI: Cosmetic & Restorative Dental Intelligence Platform
 
-This repository contains the HouseAI simulated diagnostic pipeline, a FastAPI adapter, a mock scheduling service, and a Streamlit dashboard.
+HouseAI is an intelligent multi-agent platform designed specifically for cosmetic and restorative dentists. It combines an autonomous 5-agent dental clinical swarm, multimodal X-ray and photo evaluation via Google Gemini Pro, raw text wall and insurance parsing, and an urgency-colored dental calendar.
 
-## Run locally on Windows
+---
 
-Open two Command Prompt windows in this folder. In the first, install dependencies (one time):
+## Architecture: The 5-Agent Dental Swarm
 
-```cmd
+HouseAI runs an orchestrated agent swarm where each agent focuses on a distinct dental discipline:
+
+1. **Dental Triage Nurse Agent**: Evaluates patient concerns, differentiates between elective aesthetic wishes (veneers, whitening, bonding) versus acute dental pathology/infection, and assigns the initial clinical urgency score (1 to 5) and hex color.
+2. **Cosmetic Dentist Specialist Agent**: Evaluates smile design aesthetics, tooth proportions, shade selection (VITA Bleach Shades BL1 to BL4), minimally invasive prep thickness (0.3mm to 0.5mm), e.max lithium disilicate vs feldspathic porcelain, and clear aligner sequencing.
+3. **Radiographic & Visual Analyst Agent**: Evaluates dental X-rays (periapical, bitewing, panorex, CBCT) and intraoral smile photographs using Google Gemini Pro Vision to assess biological width, alveolar bone levels, and enamel bonding substrate.
+4. **Insurance & Billing Agent**: Parses unstructured text walls and insurance documents to extract carriers, CDT billing codes (e.g. D2962, D9972, D8090, D2740), cosmetic exclusion clauses, and patient financing options.
+5. **Safety Critic Agent**: Acts as the senior clinical peer-reviewer, checking for contraindications (active periodontal pocketing, severe nocturnal bruxism requiring nightguards) and finalizing the consensus urgency score and color badge.
+
+---
+
+## Clinical Urgency Scoring & Calendar Hex Colors
+
+Every case and calendar appointment is classified with an urgency score and corresponding color for high-visibility visual scheduling:
+
+| Score | Tier | Hex Color | Clinical Description | Example Procedures |
+|---|---|---|---|---|
+| **1** | **Elective** | `#10b981` (Green) | Purely elective cosmetic enhancement | In-office Zoom whitening, cosmetic consultation, aesthetic mock-up |
+| **2** | **Cosmetic-Priority** | `#3b82f6` (Blue) | Scheduled aesthetic restorative or aligner refinement | Porcelain veneers prep/seat, Invisalign attachment delivery, cosmetic crown |
+| **3** | **Moderate** | `#f59e0b` (Yellow) | Routine general restorative or hygiene | Composite filling replacement, prophy, localized gingivitis review |
+| **4** | **Urgent** | `#f97316` (Orange) | Urgent aesthetic disruption or localized pain | Fractured front central incisor, broken veneer before an event, dislodged crown |
+| **5** | **Emergency** | `#ef4444` (Red) | High-acuity dental infection or acute trauma | Periapical abscess, severe throbbing pain, facial swelling, avulsed tooth |
+
+---
+
+## API Endpoints for Frontend Integration
+
+### 1. Multi-Agent Dental Diagnosis
+- `POST /api/diagnose`
+  - Input JSON: `DentalIntakeInput` (`patient_id`, `patient_name`, `age`, `concerns`, `raw_text_wall`, `insurance_notes`, `image_data`, `image_type`)
+  - Output: Complete report with:
+    - `urgency_score` (1-5) and `urgency_color` (hex color)
+    - `estimated_price_usd` and `estimated_price_display` (e.g. `$8,400.00`)
+    - `estimated_duration_minutes` (e.g. `150`)
+    - `treatment_plan` and `provisional_diagnosis`
+    - `cosmetic_breakdown` (aesthetic goals, shade recommendation, chair time, fees)
+    - `insurance_breakdown` (CDT codes, patient out-of-pocket responsibility, coverage status)
+    - `calendar_recommendation` (pre-computed slot recommendation with duration, fee, and operatory)
+    - `reasoning_log` (transcripts from all 5 agents)
+
+### 2. File Upload & Text Wall Ingestion
+- `POST /api/intake/upload`
+  - Accepts multipart file upload:
+    - Text files (`.txt`, `.md`, `.csv`) parsed as clinical notes and insurance text.
+    - Image files (`.png`, `.jpg`, `.jpeg`, `.webp`) converted to base64 for Gemini Vision X-ray or smile photograph analysis.
+- `POST /api/intake/parse-text-wall`
+  - JSON endpoint for pasting unstructured consultation emails, insurance summaries, or notes.
+
+### 3. Cosmetic Dentist Calendar API
+- `GET /api/calendar/events`
+  - Retrieve all appointments. Supports query filtering: `?category=Cosmetic` or `?min_urgency=3`.
+  - Each event includes `id`, `patient_name`, `procedure`, `category`, `start_time`, `end_time`, `duration_minutes`, `estimated_price_usd`, `operatory`, `urgency_score`, `urgency_level`, `urgency_color`, and `status`.
+- `POST /api/calendar/events`
+  - Book a new dental procedure with automated duration, procedure pricing, operatory assignment, urgency score, and color badge.
+- `GET /api/calendar/events/{event_id}`
+  - Fetch appointment details.
+- `PATCH /api/calendar/events/{event_id}`
+  - Reschedule appointment time or update status (`confirmed`, `in_progress`, `completed`, `cancelled`).
+- `DELETE /api/calendar/events/{event_id}`
+  - Remove/cancel an appointment.
+
+### 4. Specialists & Health Checks
+- `GET /api/doctors`
+  - Dental specialist directory, operatory suites, and upcoming available slots.
+- `GET /health`
+  - Status indicator returning active agents.
+
+---
+
+## Local Setup & Execution
+
+### 1. Install Dependencies
+```powershell
 python -m pip install -r requirements.txt
 ```
 
-Start the API:
-
-```cmd
-python -m uvicorn app:app --reload --port 8000
-```
-
-In the second window, start the dashboard:
-
-```cmd
-python -m streamlit run dashboard.py
-```
-
-Open the `http://localhost:8501` URL Streamlit prints. The API health check is at `http://localhost:8000/health`; interactive API docs are at `http://localhost:8000/docs`.
-
-## Google Gemini Pro Cloud AI Integration
-
-HouseAI includes native cloud LLM support via Google Gemini Pro. The application connects directly to Google's Gemini API over HTTPS, meaning **no local AI models need to be downloaded or run**.
-
-### Connecting your Gemini API Key
-1. Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. Create or edit `.env` in this directory (use `.env.example` as a template):
+### 2. Configure Google Gemini Pro (Optional)
+To enable live cloud LLM reasoning and multimodal vision:
+1. Copy `.env.example` to `.env`.
+2. Add your Gemini API key:
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_MODEL=gemini-1.5-pro
    ```
-3. When `GEMINI_API_KEY` is present, the 3 collaborative agents (Triage Nurse, Specialist, and Safety Critic) query Google Gemini Pro in real-time.
-4. If no key is set or if offline, HouseAI automatically falls back to its deterministic clinical decision tree, ensuring zero downtime during hackathon presentations.
+*(If no API key is provided, HouseAI automatically falls back to its deterministic dental clinical decision tree, ensuring zero downtime during presentations.)*
 
-## Demo flow
+### 3. Start the Backend API
+```powershell
+python -m uvicorn app:app --reload --port 8000
+```
+- Interactive Swagger documentation and API playground: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
 
-The patient form accepts `patient_id`, `age`, `symptoms`, and `lab_notes`, matching HouseAI's `PatientInput`. `POST /api/diagnose` calls `run_diagnostic_pipeline`, adapts its specialty and urgency result for the dashboard, and `POST /api/schedule` selects a matching mock provider slot. `GET /api/doctors` returns the mock doctor schedule.
+### 4. Run Verification Suite
+```powershell
+python test_house_ai.py
+python House_AI.py
+```
 
-## Safety and limitations
+---
 
-All analysis and appointment data are synthetic demonstrations. The diagnostic engine uses scripted rules and labels candidate diagnoses; it is not a medical device or a reliable diagnostic or triage service. Do not enter real patient information. The simulated output must not guide actual care decisions; clinical review is required.
+## Safety and Limitations
+
+All analysis and appointment records are synthetic demonstrations created for hackathon review. HouseAI is not a certified medical device and does not provide clinical diagnoses. Licensed dental practitioner evaluation and clinical judgment are required for all patient care decisions.
